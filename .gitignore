@@ -1,0 +1,25 @@
+# Visual Studio & IDE 
+.vs/
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.xcodeproj/
+*.xcworkspace/
+
+# Unreal 
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+Script/
+Plugins/
+Content/Map
+
+# Art(Mesh, Material, Texture)
+**/Art/
+
+# OS 생성 파일
+.DS_Store
+Thumbs.db

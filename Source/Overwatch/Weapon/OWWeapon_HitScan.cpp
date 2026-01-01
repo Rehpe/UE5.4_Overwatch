@@ -3,6 +3,8 @@
 
 #include "Weapon/OWWeapon_HitScan.h"
 
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "Overwatch.h"
 
 void AOWWeapon_HitScan::Fire()
@@ -61,9 +63,45 @@ void AOWWeapon_HitScan::Fire()
 		AActor* HitActor = HitResult.GetActor();
 		if (HitActor)
 		{
-			OWLOG_SCREEN(TEXT("Hit Target: %s"), *HitActor->GetName());
+			// 나의 ASC
+			UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner());
+			// 적(피격자) ASC
+			UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitActor);
 
-			// 나중에 여기에 ApplyDamage(GameplayEffect) 로직 추가
+			OWLOG_SCREEN(TEXT("Hit : %s"), *HitActor->GetName());
+			if (SourceASC && TargetASC && DamageEffectClass)
+			{
+				// 문맥(Context) : 누가, 누구를, 무엇으로 때렸나 정보
+				FGameplayEffectContextHandle ContextHandle = SourceASC->MakeEffectContext();
+				ContextHandle.AddSourceObject(this); 
+				
+				FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, 1.0f, ContextHandle);
+
+				if (SpecHandle.IsValid())
+				{
+					SourceASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), TargetASC);
+                    
+					OWLOG_SCREEN(TEXT("Applied Damage to %s"), *HitActor->GetName());
+				}
+			}
 		}
 	}
+}
+
+void AOWWeapon_HitScan::StartFire()
+{
+	Super::StartFire();
+	
+	// 첫 발 즉시 발사
+	Fire();
+
+	// 이후 타이머 설정 (FireRate 간격으로 Fire 함수 반복 호출)
+	// Looping = true
+	GetWorld()->GetTimerManager().SetTimer(FireTimerHandle, this, &AOWWeapon_HitScan::Fire, FireRate, true);
+}
+
+void AOWWeapon_HitScan::StopFire()
+{
+	Super::StopFire();
+	GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
 }

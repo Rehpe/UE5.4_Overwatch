@@ -33,12 +33,15 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<class USkeletalMeshComponent> FirstPersonMesh; //1인칭 메쉬
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-	TObjectPtr<class AOWWeapon> Weapon;
 	
 	// HeroData의 데이터 에셋을 읽어 적용
 	void ApplyHeroData();
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TObjectPtr<class AOWWeapon> Weapon;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attribute")
+	TObjectPtr<class UOWAttributeSet> AttributeSet;
 
 public:
 	FORCEINLINE TObjectPtr<AOWWeapon> GetWeapon() const { return Weapon; }

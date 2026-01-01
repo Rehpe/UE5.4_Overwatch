@@ -16,6 +16,9 @@ class OVERWATCH_API AOWWeapon_HitScan : public AOWWeapon
 
 public:
 	virtual void Fire() override;
+	
+	virtual void StartFire() override;
+	virtual void StopFire() override;
 
 protected:
 	// 사거리 (기본 50m)
@@ -25,4 +28,12 @@ protected:
 	// 데미지 (일단 변수로 둡니다. 나중에 AttributeSet으로 넘길 예정)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Config")
 	float BaseDamage = 10.0f;
+	
+	// 연사 속도 (발사 간격, 0.1 = 초당 10발)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Config")
+	float FireRate = 0.1f;
+
+	// 총알(GE) 종류를 블루프린트에서 설정할 수 있게 변수 추가
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GAS")
+	TSubclassOf<class UGameplayEffect> DamageEffectClass;
 };

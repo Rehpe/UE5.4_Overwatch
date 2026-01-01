@@ -1,0 +1,64 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "GAS/OWAttributeSet.h"
+
+#include "Net/UnrealNetwork.h"
+
+UOWAttributeSet::UOWAttributeSet()
+{
+	InitHealth(150.0f);        
+	InitMaxHealth(150.0f);
+
+	InitAmmo(40.0f);           
+	InitMaxAmmo(40.0f);
+
+	InitUltimateCharge(0.0f); 
+	InitMaxUltimateCharge(100.0f);
+}
+
+void UOWAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	//COND_NONE : 적군 아군 상관 없이 모두에게 보냄
+	//REPNOTIFY_Always : GAS의 Client Prediction을 위해, 언제나 OnRep 실행
+	DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet, Health, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet, MaxHealth, COND_None, REPNOTIFY_Always);
+    
+	DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet, Ammo, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet, MaxAmmo, COND_None, REPNOTIFY_Always);
+
+	DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet, UltimateCharge, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet, MaxUltimateCharge, COND_None, REPNOTIFY_Always);
+}
+
+void UOWAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UOWAttributeSet, Health, OldHealth);
+}
+
+void UOWAttributeSet::OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UOWAttributeSet, MaxHealth, OldMaxHealth);
+}
+
+void UOWAttributeSet::OnRep_Ammo(const FGameplayAttributeData& OldAmmo)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UOWAttributeSet, Ammo, OldAmmo);
+}
+
+void UOWAttributeSet::OnRep_MaxAmmo(const FGameplayAttributeData& OldMaxAmmo)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UOWAttributeSet, MaxAmmo, OldMaxAmmo);
+}
+
+void UOWAttributeSet::OnRep_UltimateCharge(const FGameplayAttributeData& OldUlt)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UOWAttributeSet, UltimateCharge, OldUlt);
+}
+
+void UOWAttributeSet::OnRep_MaxUltimateCharge(const FGameplayAttributeData& OldMaxUlt)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UOWAttributeSet, MaxUltimateCharge, OldMaxUlt);
+}

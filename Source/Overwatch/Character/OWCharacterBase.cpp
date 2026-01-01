@@ -22,6 +22,7 @@ AOWCharacterBase::AOWCharacterBase()
 {
  	//PrimaryActorTick.bCanEverTick = true;
 	ASC = nullptr;
+	AttributeSet = nullptr;
 
 	// -- 1p Camera Setting --
 	FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -182,6 +183,7 @@ void AOWCharacterBase::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 
 void AOWCharacterBase::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 {
+	OWLOG_SCREEN(TEXT("Input Tag Released: %s"), *InputTag.ToString());
 	if (ASC)
 	{
 		ASC->AbilityInputTagReleased(InputTag);
@@ -233,6 +235,7 @@ void AOWCharacterBase::InitAbilityActorInfo()
 		{
 			ASC->InitAbilityActorInfo(PS, this); // ASC 초기화
 		}
+		AttributeSet = PS->GetAttributeSet();
 	}
 }
 

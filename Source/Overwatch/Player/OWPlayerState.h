@@ -23,8 +23,14 @@ public:
 	// 커스텀 ASC 반환 버전
 	class UOWAbilitySystemComponent* GetOWAbilitySystemComponent() const { return ASC; }
 
+	
+	class UOWAttributeSet* GetAttributeSet() const { return AttributeSet; }
+	
 protected:
-	UPROPERTY(EditAnywhere, Category = GAS)
+	UPROPERTY(EditAnywhere, Category = "ASC")
 	TObjectPtr<class UOWAbilitySystemComponent> ASC;
+
+	UPROPERTY(EditAnywhere, Category = "AttributeSet")
+	TObjectPtr<class UOWAttributeSet> AttributeSet;
 	
 };

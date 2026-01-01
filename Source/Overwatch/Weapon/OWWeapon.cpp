@@ -65,7 +65,17 @@ void AOWWeapon::Equip(USkeletalMeshComponent* CharMesh1P, USkeletalMeshComponent
 
 void AOWWeapon::Fire()
 {
-	OWLOG_SCREEN(TEXT("AOWWeapon::Fire Called(Base)"));
+	//OWLOG_SCREEN(TEXT("AOWWeapon::Fire Called(Base)"));
+}
+
+void AOWWeapon::StartFire()
+{
+	//OWLOG_SCREEN(TEXT("AOWWeapon::StartFire Called(Base)"));
+}
+
+void AOWWeapon::StopFire()
+{
+	OWLOG_SCREEN(TEXT("AOWWeapon::StopFire Called(Base)"));
 }
 
 

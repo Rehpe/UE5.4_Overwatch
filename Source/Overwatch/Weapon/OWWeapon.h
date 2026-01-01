@@ -17,7 +17,15 @@ public:
 public:
 	void Equip(USkeletalMeshComponent* CharMesh1P, USkeletalMeshComponent* CharMesh3P);
 
+	// 점사
 	virtual void Fire();
+
+	// 연사
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	virtual void StartFire();
+	
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	virtual void StopFire();
 	
 protected:
 	// -- 1p --
@@ -41,5 +49,9 @@ protected:
 	// 서브 무기 소켓명
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	FName SubSocketName;
+
+protected:
+	// 연사 타이머 핸들
+	FTimerHandle FireTimerHandle;
 
 };

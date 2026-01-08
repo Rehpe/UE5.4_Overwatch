@@ -63,9 +63,7 @@ void AOWWeapon_HitScan::Fire()
 		AActor* HitActor = HitResult.GetActor();
 		if (HitActor)
 		{
-			// 나의 ASC
 			UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner());
-			// 적(피격자) ASC
 			UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitActor);
 
 			OWLOG_SCREEN(TEXT("Hit : %s"), *HitActor->GetName());

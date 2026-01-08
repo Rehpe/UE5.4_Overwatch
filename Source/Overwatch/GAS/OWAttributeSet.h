@@ -28,6 +28,9 @@ public:
 	UOWAttributeSet();
 
 protected:
+	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
+	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+	
 	// -- Health -- 
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes", ReplicatedUsing = OnRep_Health)
 	FGameplayAttributeData Health;
@@ -73,7 +76,6 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_MaxUltimateCharge(const FGameplayAttributeData& OldMaxUlt);
 	
-    
 	// -- Replication --
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

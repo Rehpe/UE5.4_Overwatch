@@ -3,7 +3,10 @@
 
 #include "GAS/OWAttributeSet.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "Net/UnrealNetwork.h"
+#include "GameplayEffectExtension.h"
+#include "Tags/OWGameplayTags.h"
 
 UOWAttributeSet::UOWAttributeSet()
 {
@@ -15,6 +18,49 @@ UOWAttributeSet::UOWAttributeSet()
 
 	InitUltimateCharge(0.0f); 
 	InitMaxUltimateCharge(100.0f);
+}
+
+void UOWAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
+{
+	Super::PreAttributeChange(Attribute, NewValue);
+
+	// 체력 0 미만으로 떨어지는 것 방지
+	if (Attribute == GetHealthAttribute())
+	{
+		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxHealth());
+	}
+}
+
+void UOWAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
+{
+	Super::PostGameplayEffectExecute(Data);
+
+	// Health 검사
+	if (Data.EvaluatedData.Attribute == GetHealthAttribute())
+	{
+		SetHealth(FMath::Clamp(GetHealth(), 0.0f, GetMaxHealth()));
+		if (GetHealth() <= 0.0f)
+		{
+			// 때린 사람(Attacker) 정보 가져오기 (나중에 킬로그에 씀)
+			AActor* AttackerActor = Data.EffectSpec.GetContext().GetOriginalInstigator();
+			FString AttackerName = AttackerActor ? AttackerActor->GetName() : TEXT("Unknown");
+			
+			FGameplayEventData Payload;
+			Payload.EventTag = FOWGameplayTags::Get().Event_Character_Death;
+			Payload.Instigator = AttackerActor;
+			Payload.Target = GetOwningActor();
+			
+			UE_LOG(LogTemp, Error, TEXT("[TAG_CHECK] Sending Tag: %s"), *Payload.EventTag.ToString()); // ★ 이거 확인
+			
+			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+				GetOwningActor(), 
+				Payload.EventTag, 
+				Payload
+				);
+			
+			UE_LOG(LogTemp, Error, TEXT("YOU DIED! Killed by: %s"), *AttackerName);
+		}
+	}
 }
 
 void UOWAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

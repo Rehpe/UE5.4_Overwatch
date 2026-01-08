@@ -1,0 +1,33 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+
+class UGameplayTagsManager;
+/**
+ *  OWGameplayTags
+ * C++ 코드에서 자주 사용하는 네이티브 태그들을 캐싱해두고 전역에서 접근할 수 있게 해주는 static struct
+ */
+
+struct FOWGameplayTags
+{
+public:
+	FORCEINLINE static const FOWGameplayTags& Get() { return GameplayTags; }
+	static void InitializeNativeTags();
+	
+	// Event
+	FGameplayTag Event_Character_Death; // 캐릭터 사망
+
+	// State
+	FGameplayTag State_Dead;			// 죽음
+	FGameplayTag State_Movement_Air;	// 캐릭터 공중에 뜸
+
+protected:
+	// 태그 등록 헬퍼 함수
+	void AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment);
+
+private:
+	static FOWGameplayTags GameplayTags;
+};

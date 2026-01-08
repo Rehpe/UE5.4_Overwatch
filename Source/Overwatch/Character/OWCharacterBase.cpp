@@ -14,6 +14,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GAS/OWAbilitySet.h"
 #include "GAS/OWAbilitySystemComponent.h"
+#include "GAS/Tags/OWGameplayTags.h"
 #include "Input/OWEnhancedInputComponent.h"
 #include "Weapon/OWWeapon.h"
 
@@ -173,8 +174,6 @@ void AOWCharacterBase::ApplyHeroData()
 
 void AOWCharacterBase::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 {
-	OWLOG_SCREEN(TEXT("Input Tag Pressed: %s"), *InputTag.ToString());
-	
 	if (ASC)
 	{
 		ASC->AbilityInputTagPressed(InputTag);
@@ -183,7 +182,6 @@ void AOWCharacterBase::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 
 void AOWCharacterBase::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 {
-	OWLOG_SCREEN(TEXT("Input Tag Released: %s"), *InputTag.ToString());
 	if (ASC)
 	{
 		ASC->AbilityInputTagReleased(InputTag);
@@ -247,7 +245,7 @@ void AOWCharacterBase::OnMovementModeChanged(EMovementMode PrevMovementMode, uin
 
 	// 1. 기존 이동 관련 태그 싹 지우기 (초기화)
 	// (미리 정의해둔 State.Movement 부모 태그 하위의 모든 태그 제거)
-	FGameplayTag AirTag = FGameplayTag::RequestGameplayTag("State.Movement.Air");
+	FGameplayTag AirTag = FOWGameplayTags::Get().State_Movement_Air;
 
 	if (GetCharacterMovement()->IsFalling())
 	{

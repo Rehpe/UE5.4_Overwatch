@@ -9,6 +9,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "OWHeroData.h"
+#include "OWHeroVoiceData.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -170,6 +171,19 @@ void AOWCharacterBase::ApplyHeroData()
 			Weapon->Equip(FirstPersonMesh, GetMesh());
 		}
 	}
+}
+
+USoundBase* AOWCharacterBase::GetVoice(FGameplayTag VoiceTag) const
+{
+	if (!HeroData || !HeroData->VoiceData)
+		return nullptr;
+
+	//맵에서 태그로 사운드 검색
+	if (const TObjectPtr<USoundBase>* FoundSound = HeroData->VoiceData->VoiceMap.Find(VoiceTag))
+	{
+		return *FoundSound; 
+	}
+	return nullptr;
 }
 
 void AOWCharacterBase::Input_AbilityInputTagPressed(FGameplayTag InputTag)

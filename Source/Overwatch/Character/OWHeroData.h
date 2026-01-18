@@ -11,9 +11,15 @@
  * SoftObjectPtr로 필요 시에만 로딩함
  */
 UCLASS()
-class OVERWATCH_API UOWHeroData : public UDataAsset
+class OVERWATCH_API UOWHeroData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
+
+public:
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override
+	{
+		return FPrimaryAssetId("HeroData", GetFName());
+	}
 	
 public:
 	// 1p
@@ -37,4 +43,8 @@ public:
 	// Weapon
 	UPROPERTY(EditDefaultsOnly, Category = "Equipment")
 	TSubclassOf<AActor> WeaponClass;
+
+	// Voice
+	UPROPERTY(EditDefaultsOnly, Category = "Voice")
+	TObjectPtr<class UOWHeroVoiceData> VoiceData;
 };

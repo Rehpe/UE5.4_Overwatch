@@ -49,15 +49,13 @@ void AOWWeapon_HitScan::Fire()
 		QueryParams
 	);
 
-	// 4. 시각적 피드백 (디버그)
+	// 4. Debug Line
 	FVector BeamEnd = bHit ? HitResult.ImpactPoint : EndLocation;
-
-	// 빨간 선 긋기 (0.5초 동안 유지)
 	DrawDebugLine(GetWorld(), StartLocation, BeamEnd, FColor::Red, false, 0.5f, 0, 1.0f);
 
 	if (bHit)
 	{
-		// 맞은 곳에 점 찍기
+		// Debug Point
 		DrawDebugPoint(GetWorld(), HitResult.ImpactPoint, 10.0f, FColor::Red, false, 0.5f);
 
 		AActor* HitActor = HitResult.GetActor();
@@ -71,9 +69,9 @@ void AOWWeapon_HitScan::Fire()
 			{
 				// 문맥(Context) : 누가, 누구를, 무엇으로 때렸나 정보
 				FGameplayEffectContextHandle ContextHandle = SourceASC->MakeEffectContext();
-				ContextHandle.AddSourceObject(this); 
-				
-				FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, 1.0f, ContextHandle);
+				ContextHandle.AddSourceObject(this); // 무기정보 등록
+				ContextHandle.AddHitResult(HitResult); // HitResult 등록
+				FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, 1.0f, ContextHandle); // Spec 생성
 
 				if (SpecHandle.IsValid())
 				{

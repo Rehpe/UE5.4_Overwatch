@@ -24,6 +24,19 @@ public:
 	FGameplayTag State_Dead;			// 죽음
 	FGameplayTag State_Movement_Air;	// 캐릭터 공중에 뜸
 
+	// GameplayCue
+	FGameplayTag GameplayCue_Character_Death;	// 죽음
+
+	// Sound
+	FGameplayTag Sound_Voice_Death;
+	FGameplayTag Sound_Voice_Pain;
+	FGameplayTag Sound_Voice_Jumping;
+	FGameplayTag Sound_Voice_JumpEnd;
+	FGameplayTag Sound_Voice_MeleeAttack;
+	FGameplayTag Sound_Voice_HealPack;
+	FGameplayTag Sound_Voice_HealthRestoredFriendly;
+	FGameplayTag Sound_Voice_Respawn;
+
 protected:
 	// 태그 등록 헬퍼 함수
 	void AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment);

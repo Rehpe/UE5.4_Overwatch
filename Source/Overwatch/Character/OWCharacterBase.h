@@ -45,6 +45,9 @@ protected:
 
 public:
 	FORCEINLINE TObjectPtr<AOWWeapon> GetWeapon() const { return Weapon; }
+
+	UFUNCTION(BlueprintPure)
+	USoundBase* GetVoice(FGameplayTag VoiceTag) const;
 	
 protected:
 	// -- Input --

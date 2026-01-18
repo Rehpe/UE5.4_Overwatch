@@ -24,10 +24,14 @@ void UOWAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, fl
 {
 	Super::PreAttributeChange(Attribute, NewValue);
 
-	// 체력 0 미만으로 떨어지는 것 방지
+	// 0 미만으로 떨어지는 것 방지
 	if (Attribute == GetHealthAttribute())
 	{
 		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxHealth());
+	}
+	if (Attribute == GetAmmoAttribute())
+	{
+		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxAmmo());
 	}
 }
 
@@ -49,8 +53,9 @@ void UOWAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallback
 			Payload.EventTag = FOWGameplayTags::Get().Event_Character_Death;
 			Payload.Instigator = AttackerActor;
 			Payload.Target = GetOwningActor();
+			Payload.ContextHandle = Data.EffectSpec.GetContext();
 			
-			UE_LOG(LogTemp, Error, TEXT("[TAG_CHECK] Sending Tag: %s"), *Payload.EventTag.ToString()); // ★ 이거 확인
+			UE_LOG(LogTemp, Error, TEXT("[TAG_CHECK] Sending Tag: %s"), *Payload.EventTag.ToString());
 			
 			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
 				GetOwningActor(), 

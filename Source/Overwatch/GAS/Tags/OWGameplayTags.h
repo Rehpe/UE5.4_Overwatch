@@ -23,6 +23,7 @@ public:
 	// State
 	FGameplayTag State_Dead;			// 죽음
 	FGameplayTag State_Movement_Air;	// 캐릭터 공중에 뜸
+	FGameplayTag State_Combat_Firing;	// 캐릭터 사격 중
 
 	// GameplayCue
 	FGameplayTag GameplayCue_Character_Death;	// 죽음

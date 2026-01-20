@@ -16,33 +16,13 @@ void UOWGA_Weapon_Ranged_Fire::ActivateAbility(const FGameplayAbilitySpecHandle 
 	const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-	// 1. 커밋 (쿨타임, 코스트 확인)
-	// if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
-	// {
-	//     EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-	//     return;
-	// }
-	
-	AOWCharacterBase* Character = Cast<AOWCharacterBase>(ActorInfo->AvatarActor.Get());
-	if (!Character)
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-		return;
-	}
 
-	AOWWeapon* Weapon = Character->GetWeapon();
-	if (Weapon)
+	FireShot();
+	
+	// 타이머 시작 (FireRate 간격으로 반복 호출)
+	if (GetWorld())
 	{
-		Weapon->StartFire();
-		/*
-		// 키 뗄 때까지 대기하는 Task 생성
-		UAbilityTask_WaitInputRelease* WaitTask = UAbilityTask_WaitInputRelease::WaitInputRelease(this);
-		if (WaitTask)
-		{
-			// 키 떼면 OnRelease 실행
-			WaitTask->OnRelease.AddDynamic(this, &UOWGA_Weapon_Ranged_Fire::OnRelease);
-			WaitTask->ReadyForActivation();
-		}*/
+		GetWorld()->GetTimerManager().SetTimer(FireTimerHandle, this, &UOWGA_Weapon_Ranged_Fire::FireShot, FireRate, true);
 	}
 }
 
@@ -58,21 +38,36 @@ void UOWGA_Weapon_Ranged_Fire::EndAbility(const FGameplayAbilitySpecHandle Handl
                                           const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
                                           bool bReplicateEndAbility, bool bWasCancelled)
 {
-	// 이미 종료 중이면 스킵
-	if (IsEndAbilityValid(Handle, ActorInfo))
+	// 타이머 종료
+	if (GetWorld())
 	{
-		StopRangedWeaponFire();
+		GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
 	}
-	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
-void UOWGA_Weapon_Ranged_Fire::StopRangedWeaponFire()
+void UOWGA_Weapon_Ranged_Fire::FireShot()
 {
-	AOWCharacterBase* Character = Cast<AOWCharacterBase>(GetCurrentActorInfo()->AvatarActor.Get());
-	if (Character && Character->GetWeapon())
+
+	// 탄약 비용 지불
+	if (!CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo))
 	{
-		// 연사 중지(Timer Off)
-		Character->GetWeapon()->StopFire();
+		// 탄약 부족시 종료
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+		return;
+	}
+
+	// 무기 체크
+	AOWCharacterBase* Character = Cast<AOWCharacterBase>(GetAvatarActorFromActorInfo());
+	if (!Character) 
+	{
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+		return;
+	}
+
+	AOWWeapon* Weapon = Character->GetWeapon();
+	if (Weapon)
+	{
+		Weapon->Fire();
 	}
 }

@@ -83,21 +83,3 @@ void AOWWeapon_HitScan::Fire()
 		}
 	}
 }
-
-void AOWWeapon_HitScan::StartFire()
-{
-	Super::StartFire();
-	
-	// 첫 발 즉시 발사
-	Fire();
-
-	// 이후 타이머 설정 (FireRate 간격으로 Fire 함수 반복 호출)
-	// Looping = true
-	GetWorld()->GetTimerManager().SetTimer(FireTimerHandle, this, &AOWWeapon_HitScan::Fire, FireRate, true);
-}
-
-void AOWWeapon_HitScan::StopFire()
-{
-	Super::StopFire();
-	GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
-}

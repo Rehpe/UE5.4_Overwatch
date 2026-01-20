@@ -42,6 +42,8 @@ AOWCharacterBase::AOWCharacterBase()
 	FirstPersonMesh->SetOnlyOwnerSee(true);
 	FirstPersonMesh->CastShadow = false; 
 	FirstPersonMesh->bCastDynamicShadow = false;
+	FirstPersonMesh->SetLightAttachmentsAsGroup(true); 
+
 	// 3p Mesh 안보이게, 그림자 보임
 	GetMesh()->SetOwnerNoSee(true); 
 	GetMesh()->bCastHiddenShadow = true;
@@ -54,7 +56,11 @@ AOWCharacterBase::AOWCharacterBase()
 		GetCharacterMovement()->AirControl = 1.0f;
 		GetCharacterMovement()->BrakingDecelerationWalking = 2048.0f;
 		GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+		GetCharacterMovement()->GetNavAgentPropertiesRef().bCanCrouch = true;
+		GetCharacterMovement()->MaxWalkSpeedCrouched = 300.0f;
 		JumpMaxHoldTime = 0.0f;
+		BaseEyeHeight = 70.f;
+		CrouchedEyeHeight = 25.f;
 	}
 }
 

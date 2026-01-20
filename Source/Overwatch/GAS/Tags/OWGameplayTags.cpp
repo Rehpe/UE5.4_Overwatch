@@ -20,6 +20,7 @@ void FOWGameplayTags::InitializeNativeTags()
 	// State
 	GameplayTags.AddTag(GameplayTags.State_Movement_Air, "State.Movement.Air", "State.Movement.Air");
 	GameplayTags.AddTag(GameplayTags.State_Dead, "State.Dead", "State.Dead");
+	GameplayTags.AddTag(GameplayTags.State_Combat_Firing, "State.Combat.Firing", "State.Combat.Firing");
 
 	// GameplayCue
 	GameplayTags.AddTag(GameplayTags.GameplayCue_Character_Death, "GameplayCue.Character.Death", "GameplayCue.Character.Death");

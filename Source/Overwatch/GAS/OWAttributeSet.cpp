@@ -45,7 +45,7 @@ void UOWAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallback
 		SetHealth(FMath::Clamp(GetHealth(), 0.0f, GetMaxHealth()));
 		if (GetHealth() <= 0.0f)
 		{
-			// 때린 사람(Attacker) 정보 가져오기 (나중에 킬로그에 씀)
+			// 때린 사람(Attacker) 정보 가져오기
 			AActor* AttackerActor = Data.EffectSpec.GetContext().GetOriginalInstigator();
 			FString AttackerName = AttackerActor ? AttackerActor->GetName() : TEXT("Unknown");
 			
@@ -65,6 +65,11 @@ void UOWAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallback
 			
 			UE_LOG(LogTemp, Error, TEXT("YOU DIED! Killed by: %s"), *AttackerName);
 		}
+	}
+	if (Data.EvaluatedData.Attribute == GetAmmoAttribute())
+	{
+		SetAmmo(FMath::Clamp(GetAmmo(), 0.0f, GetMaxAmmo()));
+		//탄약 0일 때 재장전 
 	}
 }
 

@@ -10,12 +10,13 @@ void FOWGameplayTags::InitializeNativeTags()
 {
 	UGameplayTagsManager& Manager = UGameplayTagsManager::Get();
 
-	// -----------------------------------------------------------------------
-	// [등록] 태그와 변수 연결
-	// -----------------------------------------------------------------------
+	// Ability
+	GameplayTags.AddTag(GameplayTags.Ability_Action_Reload, "Ability.Action.Reload", "Ability.Action.Reload");
 
 	// Event
-	GameplayTags.AddTag(GameplayTags.Event_Character_Death, "Event.Character.Death", "Event.Character.Death");
+	GameplayTags.AddTag(GameplayTags.GameplayEvent_Character_Death, "GameplayEvent.Character.Death", "GameplayEvent.Character.Death");
+	GameplayTags.AddTag(GameplayTags.GameplayEvent_Ability_Reload_Refill, "GameplayEvent.Ability.Reload.Refill", "GameplayEvent.Ability.Reload.Refill");
+	GameplayTags.AddTag(GameplayTags.GameplayEvent_Weapon_OutOfAmmo, "GameplayEvent.Weapon.OutOfAmmo", "GameplayEvent.Weapon.OutOfAmmo");
 
 	// State
 	GameplayTags.AddTag(GameplayTags.State_Movement_Air, "State.Movement.Air", "State.Movement.Air");

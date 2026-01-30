@@ -3,8 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "GameFramework/Actor.h"
 #include "OWWeapon.generated.h"
+
+USTRUCT(BlueprintType)
+struct FWeaponAnimData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UAnimMontage> Montage_1P = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UAnimMontage> Montage_3P = nullptr;
+};
 
 UCLASS()
 class OVERWATCH_API AOWWeapon : public AActor
@@ -36,10 +49,24 @@ protected:
 	TObjectPtr<UStaticMeshComponent> WeaponMesh3P_Sub;
 
 	// 메인 무기 소켓명
-	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	UPROPERTY(EditDefaultsOnly)
 	FName MainSocketName;
 
 	// 서브 무기 소켓명
-	UPROPERTY(EditDefaultsOnly, Category = "Setup")
+	UPROPERTY(EditDefaultsOnly)
 	FName SubSocketName;
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TMap<FGameplayTag, FWeaponAnimData> WeaponMontages;
+	
+	UFUNCTION(BlueprintCallable)
+	FWeaponAnimData GetWeaponAnimData(FGameplayTag ActionTag) const
+	{
+		if (const FWeaponAnimData* FoundData = WeaponMontages.Find(ActionTag))
+		{
+			return *FoundData;
+		}
+		return FWeaponAnimData();
+	}
 };

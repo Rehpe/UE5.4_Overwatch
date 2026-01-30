@@ -39,6 +39,20 @@ public:
 	// SkillSet
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TObjectPtr<class UOWAbilitySet> AbilitySet;
+
+	// GAS AttributeSet Init
+	// 공통
+	UPROPERTY(EditDefaultsOnly, Category = "GAS|Init")
+	TSubclassOf<UGameplayEffect> InitState_Base;
+
+	// 탄약
+	UPROPERTY(EditDefaultsOnly, Category = "GAS|Init")
+	TSubclassOf<UGameplayEffect> InitState_Weapon;
+
+	// 스킬/스태미너
+	UPROPERTY(EditDefaultsOnly, Category = "GAS|Init")
+	TSubclassOf<UGameplayEffect> InitState_Skill;
+	
 	
 	// Weapon
 	UPROPERTY(EditDefaultsOnly, Category = "Equipment")

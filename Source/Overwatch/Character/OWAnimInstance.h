@@ -6,6 +6,7 @@
 #include "Animation/AnimInstance.h"
 #include "OWAnimInstance.generated.h"
 
+class UOWAbilitySystemComponent;
 /**
  * 
  */
@@ -19,7 +20,8 @@ public:
 	
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
-
+	void InitASC(UOWAbilitySystemComponent* OWASC);
+	
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	float GroundSpeed;
@@ -29,6 +31,9 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly)
 	FVector Velocity;
+	
+	UPROPERTY(BlueprintReadOnly)
+	FRotator AimRotation;
 	
 	// 움직여야 하는가? (Idle <-> Run 전환용)
 	UPROPERTY(BlueprintReadOnly)

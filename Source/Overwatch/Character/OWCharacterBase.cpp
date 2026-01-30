@@ -8,10 +8,12 @@
 #include "Player/OWPlayerState.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "OWAnimInstance.h"
 #include "OWHeroData.h"
 #include "OWHeroVoiceData.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GAS/OWAbilitySet.h"
 #include "GAS/OWAbilitySystemComponent.h"
@@ -24,7 +26,9 @@ AOWCharacterBase::AOWCharacterBase()
 {
  	//PrimaryActorTick.bCanEverTick = true;
 	ASC = nullptr;
-	AttributeSet = nullptr;
+	AttributeSet_Base = nullptr;
+	AttributeSet_Weapon = nullptr;
+	AttributeSet_Skill = nullptr;
 
 	// -- 1p Camera Setting --
 	FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -47,6 +51,10 @@ AOWCharacterBase::AOWCharacterBase()
 	// 3p Mesh 안보이게, 그림자 보임
 	GetMesh()->SetOwnerNoSee(true); 
 	GetMesh()->bCastHiddenShadow = true;
+	//최적화 끄기 (서버도 애니메이션을 돌려야 함)
+	GetMesh()->bEnableUpdateRateOptimizations = false;
+	// 화면에 안 보여도 무조건 뼈를 갱신하고 Notify를 체크해라
+	GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
 
 	// -- Movement --
 	if (GetCharacterMovement())
@@ -179,6 +187,48 @@ void AOWCharacterBase::ApplyHeroData()
 	}
 }
 
+void AOWCharacterBase::InitAttributes()
+{
+	if (!ASC || !HeroData)
+	{
+		return;
+	}
+
+	// 이펙트 컨텍스트 생성 (누가 시전했는지 기록)
+	FGameplayEffectContextHandle ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();
+	ContextHandle.AddSourceObject(this);
+
+	// Base 초기화
+	if (HeroData->InitState_Base)
+	{
+		FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(HeroData->InitState_Base, 1.0f, ContextHandle);
+		if (SpecHandle.IsValid())
+		{
+			GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), GetAbilitySystemComponent());
+		}
+	}
+
+	// Weapon 초기화
+	if (HeroData->InitState_Weapon)
+	{
+		FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(HeroData->InitState_Weapon, 1.0f, ContextHandle);
+		if (SpecHandle.IsValid())
+		{
+			GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), GetAbilitySystemComponent());
+		}
+	}
+
+	// Skill 초기화
+	if (HeroData->InitState_Skill)
+	{
+		FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(HeroData->InitState_Skill, 1.0f, ContextHandle);
+		if (SpecHandle.IsValid())
+		{
+			GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), GetAbilitySystemComponent());
+		}
+	}
+}
+
 USoundBase* AOWCharacterBase::GetVoice(FGameplayTag VoiceTag) const
 {
 	if (!HeroData || !HeroData->VoiceData)
@@ -248,12 +298,28 @@ void AOWCharacterBase::InitAbilityActorInfo()
 	AOWPlayerState* PS = GetPlayerState<AOWPlayerState>();
 	if(PS)
 	{
+		// ASC 받아옴
 		ASC = PS->GetOWAbilitySystemComponent();
 		if(ASC)
 		{
 			ASC->InitAbilityActorInfo(PS, this); // ASC 초기화
+			if (GetMesh() && GetMesh()->GetAnimInstance())
+			{
+				// AnimInstance에 ASC 전달
+				UOWAnimInstance* AnimInst = Cast<UOWAnimInstance>(GetMesh()->GetAnimInstance());
+				if (AnimInst)
+				{
+					AnimInst->InitASC(ASC);
+				}
+			}
 		}
-		AttributeSet = PS->GetAttributeSet();
+
+		// AS 3종 받아오고 초기화
+		AttributeSet_Base = PS->GetAttributeSet_Base();
+		AttributeSet_Weapon = PS->GetAttributeSet_Weapon();
+		AttributeSet_Skill = PS->GetAttributeSet_Skill();
+
+		InitAttributes();
 	}
 }
 

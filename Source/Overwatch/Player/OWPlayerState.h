@@ -22,15 +22,21 @@ public:
 
 	// 커스텀 ASC 반환 버전
 	class UOWAbilitySystemComponent* GetOWAbilitySystemComponent() const { return ASC; }
-
 	
-	class UOWAttributeSet* GetAttributeSet() const { return AttributeSet; }
+	class UOWAttributeSet_Base* GetAttributeSet_Base() const { return AttributeSet_Base; }
+	class UOWAttributeSet_Weapon* GetAttributeSet_Weapon() const { return AttributeSet_Weapon; }
+	class UOWAttributeSet_Skill* GetAttributeSet_Skill() const { return AttributeSet_Skill; }
 	
 protected:
 	UPROPERTY(EditAnywhere, Category = "ASC")
 	TObjectPtr<class UOWAbilitySystemComponent> ASC;
+	
+	UPROPERTY(EditAnywhere, Category = "AttributeSet")
+	TObjectPtr<class UOWAttributeSet_Base> AttributeSet_Base;
 
 	UPROPERTY(EditAnywhere, Category = "AttributeSet")
-	TObjectPtr<class UOWAttributeSet> AttributeSet;
-	
+	TObjectPtr<class UOWAttributeSet_Weapon> AttributeSet_Weapon;
+
+	UPROPERTY(EditAnywhere, Category = "AttributeSet")
+	TObjectPtr<class UOWAttributeSet_Skill> AttributeSet_Skill;
 };

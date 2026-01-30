@@ -44,6 +44,19 @@ void UOWAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	Velocity = MovementComponent->Velocity;
 	GroundSpeed = Velocity.Size2D();
 
+	// 컨트롤러 회전값 (카메라가 보는 방향)
+	FRotator ControlRotation = Character->GetControlRotation();
+    
+	// 캐릭터 몸통 회전값
+	FRotator ActorRotation = Character->GetActorRotation();
+
+	// 차이(Delta) 구하기
+	FRotator DeltaRot = ControlRotation - ActorRotation;
+	DeltaRot.Normalize();
+	// Pitch: 위/아래 (-90 ~ 90)
+	// Yaw: 좌/우 (-180 ~ 180, 보통 90도 넘어가면 몸을 돌리는 TurnInPlace를 씀)
+	AimRotation = DeltaRot;
+	
 	// 움직임 판단 (입력이 있거나, 속도가 있을 때)
 	bool bHasInput = MovementComponent->GetCurrentAcceleration().SizeSquared() > 0.0f;
 	bShouldMove = (GroundSpeed > 3.0f) || bHasInput;
@@ -77,4 +90,9 @@ void UOWAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		FGameplayTag FiringTag = FOWGameplayTags::Get().State_Combat_Firing;
 		bIsFiring = ASC->HasMatchingGameplayTag(FiringTag);
 	}
+}
+
+void UOWAnimInstance::InitASC(UOWAbilitySystemComponent* OWASC)
+{
+	ASC = OWASC;
 }

@@ -14,11 +14,11 @@ void UOWGA_Crouch::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	AOWCharacterBase* Character = CastChecked<AOWCharacterBase>(ActorInfo->AvatarActor.Get());
-	if(!Character)
+	AOWCharacterBase* OWCharacter = GetOWCharacter();
+	if(!OWCharacter)
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 	
-	Character->Crouch();
+	OWCharacter->Crouch();
 	
 	//if (CommitAbility(Handle, ActorInfo, ActivationInfo))
 }
@@ -28,8 +28,9 @@ void UOWGA_Crouch::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGa
 {
 	if (IsEndAbilityValid(Handle, ActorInfo))
 	{
-		AOWCharacterBase* Character = CastChecked<AOWCharacterBase>(ActorInfo->AvatarActor.Get());
-		Character->UnCrouch();
+		AOWCharacterBase* OWCharacter = GetOWCharacter();
+		if(OWCharacter)
+			OWCharacter->UnCrouch();
 	}
 	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
@@ -53,6 +54,6 @@ bool UOWGA_Crouch::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		return false;
 	}
 
-	const AOWCharacterBase* Character = Cast<AOWCharacterBase>(ActorInfo->AvatarActor.Get());
-	return Character && Character->CanCrouch();
+	AOWCharacterBase* OWCharacter = GetOWCharacter();
+	return OWCharacter && OWCharacter->CanCrouch();
 }

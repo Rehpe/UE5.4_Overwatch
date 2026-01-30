@@ -58,14 +58,14 @@ void UOWGA_Weapon_Ranged_Fire::FireShot()
 	}
 
 	// 무기 체크
-	AOWCharacterBase* Character = Cast<AOWCharacterBase>(GetAvatarActorFromActorInfo());
-	if (!Character) 
+	AOWCharacterBase* OWCharacter = GetOWCharacter();
+	if (!OWCharacter) 
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 		return;
 	}
 
-	AOWWeapon* Weapon = Character->GetWeapon();
+	AOWWeapon* Weapon = OWCharacter->GetWeapon();
 	if (Weapon)
 	{
 		Weapon->Fire();

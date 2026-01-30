@@ -4,6 +4,7 @@
 #include "GAS/GA/OWGameplayAbility.h"
 
 #include "AbilitySystemComponent.h"
+#include "Character/OWCharacterBase.h"
 
 UOWGameplayAbility::UOWGameplayAbility()
 {
@@ -33,4 +34,13 @@ void UOWGameplayAbility::InputReleased(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
 	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
+}
+
+AOWCharacterBase* UOWGameplayAbility::GetOWCharacter() const
+{
+	if(CurrentActorInfo)
+	{
+		return Cast<AOWCharacterBase>(CurrentActorInfo->AvatarActor.Get());
+	}
+	return nullptr;
 }

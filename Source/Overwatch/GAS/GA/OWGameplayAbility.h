@@ -30,9 +30,11 @@ public:
 
 	// 어빌리티가 캐릭터에게 주어졌을 때 호출됨 (패시브 발동 처리용)
 	virtual void OnGiveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
-
 	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
-
+	
+	UFUNCTION(BlueprintCallable)
+	AOWCharacterBase* GetOWCharacter() const;
+	
 protected:
 	// 발동 정책
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "OW|Ability Activation")

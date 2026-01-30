@@ -16,12 +16,17 @@ struct FOWGameplayTags
 public:
 	FORCEINLINE static const FOWGameplayTags& Get() { return GameplayTags; }
 	static void InitializeNativeTags();
+
+	// Ability
+	FGameplayTag Ability_Action_Reload;	// 재장전
 	
 	// Event
-	FGameplayTag Event_Character_Death; // 캐릭터 사망
+	FGameplayTag GameplayEvent_Character_Death; // 캐릭터 사망
+	FGameplayTag GameplayEvent_Ability_Reload_Refill; // 총알 재장전
+	FGameplayTag GameplayEvent_Weapon_OutOfAmmo; // 탄약 0 -> 재장전 요청
 
 	// State
-	FGameplayTag State_Dead;			// 죽음
+	FGameplayTag State_Dead;			// 사망
 	FGameplayTag State_Movement_Air;	// 캐릭터 공중에 뜸
 	FGameplayTag State_Combat_Firing;	// 캐릭터 사격 중
 

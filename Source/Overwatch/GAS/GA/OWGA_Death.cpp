@@ -50,24 +50,24 @@ void UOWGA_Death::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGam
 
 void UOWGA_Death::StartRagdoll(const FGameplayEventData* TriggerEventData)
 {
-	AOWCharacterBase* Character = Cast<AOWCharacterBase>(GetAvatarActorFromActorInfo());
-	if (!Character) return;
+	AOWCharacterBase* OWCharacter = GetOWCharacter();
+	if (!OWCharacter) return;
 
 	// 관성 제거 (이동 정지)
-	if (UCharacterMovementComponent* CMC = Character->GetCharacterMovement())
+	if (UCharacterMovementComponent* CMC = OWCharacter->GetCharacterMovement())
 	{
 		CMC->StopMovementImmediately();
 		CMC->DisableMovement();
 	}
 
 	// 콜리전 해제
-	if (UCapsuleComponent* Capsule = Character->GetCapsuleComponent())
+	if (UCapsuleComponent* Capsule = OWCharacter->GetCapsuleComponent())
 	{
 		Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 
 	// Ragdoll & Impulse
-	if (USkeletalMeshComponent* Mesh = Character->GetMesh())
+	if (USkeletalMeshComponent* Mesh = OWCharacter->GetMesh())
 	{
 		// Ragdoll
 		Mesh->SetCollisionProfileName(FName("Ragdoll"));
@@ -88,7 +88,7 @@ void UOWGA_Death::StartRagdoll(const FGameplayEventData* TriggerEventData)
 			else if (AActor* CauserActor = TriggerEventData->ContextHandle.GetEffectCauser())
 			{
 				FVector CauserLocation = CauserActor->GetActorLocation();
-				FVector MyLocation = Character->GetActorLocation();
+				FVector MyLocation = OWCharacter->GetActorLocation();
 				// 폭발 중심 -> 내 위치 방향
 				ImpulseDirection = (MyLocation - CauserLocation).GetSafeNormal();
 			}
@@ -99,8 +99,8 @@ void UOWGA_Death::StartRagdoll(const FGameplayEventData* TriggerEventData)
 			// Impulse Debug
 			DrawDebugDirectionalArrow(
 				GetWorld(), 
-				Character->GetActorLocation(), 
-				Character->GetActorLocation() + (ImpulseDirection * 200.0f), 
+				OWCharacter->GetActorLocation(), 
+				OWCharacter->GetActorLocation() + (ImpulseDirection * 200.0f), 
 				50.0f, FColor::Red, false, 3.0f, 0, 5.0f
 			);
 			
@@ -117,7 +117,5 @@ void UOWGA_Death::StartRagdoll(const FGameplayEventData* TriggerEventData)
 				Mesh->AddImpulse(ImpulseDirection * ImpulsePower, NAME_None, true); 
 			}
 		}
-
 	}
-	
 }

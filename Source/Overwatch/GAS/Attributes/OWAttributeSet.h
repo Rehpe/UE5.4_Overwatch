@@ -11,7 +11,7 @@
  * 
  */
 
-// 매크로: 속성 접근자(Getter/Setter) 자동 생성 도우미
+// 매크로: 속성 접근자(Getter/Setter)
 #define ATTRIBUTE_ACCESSORS(ClassName, PropertyName) \
 		GAMEPLAYATTRIBUTE_PROPERTY_GETTER(ClassName, PropertyName) \
 		GAMEPLAYATTRIBUTE_VALUE_GETTER(PropertyName) \

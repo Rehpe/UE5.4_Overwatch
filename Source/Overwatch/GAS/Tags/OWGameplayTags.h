@@ -9,6 +9,7 @@ class UGameplayTagsManager;
 /**
  *  OWGameplayTags
  * C++ 코드에서 자주 사용하는 네이티브 태그들을 캐싱해두고 전역에서 접근할 수 있게 해주는 static struct
+ * FGameplayTag AirTag = FOWGameplayTags::Get().State_Movement_Air; 
  */
 
 struct FOWGameplayTags
@@ -33,6 +34,9 @@ public:
 	// GameplayCue
 	FGameplayTag GameplayCue_Character_Death;	// 죽음
 
+	// Data
+	FGameplayTag Data_HealAmount;	// 힐량
+	
 	// Sound
 	FGameplayTag Sound_Voice_Death;
 	FGameplayTag Sound_Voice_Pain;

@@ -17,6 +17,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GAS/OWAbilitySet.h"
 #include "GAS/OWAbilitySystemComponent.h"
+#include "GAS/Attributes/OWAttributeSet_Base.h"
 #include "GAS/Tags/OWGameplayTags.h"
 #include "Input/OWEnhancedInputComponent.h"
 #include "Weapon/OWWeapon.h"
@@ -240,6 +241,14 @@ USoundBase* AOWCharacterBase::GetVoice(FGameplayTag VoiceTag) const
 		return *FoundSound; 
 	}
 	return nullptr;
+}
+
+float AOWCharacterBase::GetHealth() const
+{
+	if(!ASC)
+		return 0.f;
+	
+	return GetAbilitySystemComponent()->GetNumericAttribute(UOWAttributeSet_Base::GetHealthAttribute());
 }
 
 void AOWCharacterBase::Input_AbilityInputTagPressed(FGameplayTag InputTag)

@@ -26,6 +26,9 @@ void FOWGameplayTags::InitializeNativeTags()
 	// GameplayCue
 	GameplayTags.AddTag(GameplayTags.GameplayCue_Character_Death, "GameplayCue.Character.Death", "GameplayCue.Character.Death");
 
+	// Data
+	GameplayTags.AddTag(GameplayTags.Data_HealAmount, "Data.HealAmount", "Data.HealAmount");
+	
 	// Sound
 	GameplayTags.AddTag(GameplayTags.Sound_Voice_Death, "Sound.Voice.Death", "Sound.Voice.Death");
 	GameplayTags.AddTag(GameplayTags.Sound_Voice_Pain, "Sound.Voice.Pain", "Sound.Voice.Pain");

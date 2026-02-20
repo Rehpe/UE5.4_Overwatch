@@ -59,6 +59,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	USoundBase* GetVoice(FGameplayTag VoiceTag) const;
+
+	UFUNCTION(BlueprintPure)
+	float GetHealth() const;
 	
 protected:
 	// -- Input --

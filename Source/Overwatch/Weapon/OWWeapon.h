@@ -55,7 +55,16 @@ protected:
 	// 서브 무기 소켓명
 	UPROPERTY(EditDefaultsOnly)
 	FName SubSocketName;
+	
+	UPROPERTY(EditDefaultsOnly)
+	float BaseWeaponFireDamage;
 
+	// 단발성 데미지 GE
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<class UGameplayEffect> DamageEffectClass;
+
+	void ApplyWeaponDamage(const FHitResult& HitResult) const;
+	
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TMap<FGameplayTag, FWeaponAnimData> WeaponMontages;

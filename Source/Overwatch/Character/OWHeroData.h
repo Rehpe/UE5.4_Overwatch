@@ -61,4 +61,11 @@ public:
 	// Voice
 	UPROPERTY(EditDefaultsOnly, Category = "Voice")
 	TObjectPtr<class UOWHeroVoiceData> VoiceData;
+
+	// Combat
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	float BaseMeleeAttackDamage = 30.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	float BaseMeleeAttackRange = 150.0f;
 };

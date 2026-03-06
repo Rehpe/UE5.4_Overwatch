@@ -49,9 +49,9 @@ AOWCharacterBase::AOWCharacterBase()
 	FirstPersonMesh->bCastDynamicShadow = false;
 	FirstPersonMesh->SetLightAttachmentsAsGroup(true); 
 
-	// 3p Mesh 안보이게, 그림자 보임
+	// 3p Mesh 안보이게, 그림자 안 보임
 	GetMesh()->SetOwnerNoSee(true); 
-	GetMesh()->bCastHiddenShadow = true;
+	GetMesh()->CastShadow = false;
 	//최적화 끄기 (서버도 애니메이션을 돌려야 함)
 	GetMesh()->bEnableUpdateRateOptimizations = false;
 	// 화면에 안 보여도 무조건 뼈를 갱신하고 Notify를 체크해라
@@ -243,6 +243,12 @@ USoundBase* AOWCharacterBase::GetVoice(FGameplayTag VoiceTag) const
 	return nullptr;
 }
 
+UOWHeroData* AOWCharacterBase::GetHeroData() const
+{
+	if(!ASC) return nullptr;
+	return HeroData;
+}
+
 float AOWCharacterBase::GetHealth() const
 {
 	if(!ASC)
@@ -269,6 +275,12 @@ void AOWCharacterBase::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 
 void AOWCharacterBase::Input_Move(const struct FInputActionValue& Value)
 {
+	// 차단 태그가 있다면 이동 입력 무시
+	if (GetAbilitySystemComponent()->HasMatchingGameplayTag(FOWGameplayTags::Get().State_Block_Input))
+	{
+		return; 
+	}
+	
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (Controller)
@@ -286,6 +298,12 @@ void AOWCharacterBase::Input_Move(const struct FInputActionValue& Value)
 
 void AOWCharacterBase::Input_Look(const struct FInputActionValue& Value)
 {
+	// 차단 태그가 있다면 방향 전환 무시
+	if (GetAbilitySystemComponent()->HasMatchingGameplayTag(FOWGameplayTags::Get().State_Block_Input))
+	{
+		return; 
+	}
+	
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
 	if (Controller)

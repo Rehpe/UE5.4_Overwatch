@@ -58,28 +58,6 @@ void AOWWeapon_HitScan::Fire()
 		// Debug Point
 		DrawDebugPoint(GetWorld(), HitResult.ImpactPoint, 10.0f, FColor::Red, false, 0.5f);
 
-		AActor* HitActor = HitResult.GetActor();
-		if (HitActor)
-		{
-			UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner());
-			UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitActor);
-
-			OWLOG_SCREEN(TEXT("Hit : %s"), *HitActor->GetName());
-			if (SourceASC && TargetASC && DamageEffectClass)
-			{
-				// 문맥(Context) : 누가, 누구를, 무엇으로 때렸나 정보
-				FGameplayEffectContextHandle ContextHandle = SourceASC->MakeEffectContext();
-				ContextHandle.AddSourceObject(this); // 무기정보 등록
-				ContextHandle.AddHitResult(HitResult); // HitResult 등록
-				FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, 1.0f, ContextHandle); // Spec 생성
-
-				if (SpecHandle.IsValid())
-				{
-					SourceASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), TargetASC);
-                    
-					OWLOG_SCREEN(TEXT("Applied Damage to %s"), *HitActor->GetName());
-				}
-			}
-		}
+		ApplyWeaponDamage(HitResult);
 	}
 }

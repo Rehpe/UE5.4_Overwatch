@@ -61,6 +61,9 @@ public:
 	USoundBase* GetVoice(FGameplayTag VoiceTag) const;
 
 	UFUNCTION(BlueprintPure)
+	UOWHeroData* GetHeroData() const;
+	
+	UFUNCTION(BlueprintPure)
 	float GetHealth() const;
 	
 protected:

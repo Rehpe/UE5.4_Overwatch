@@ -19,23 +19,37 @@ public:
 	static void InitializeNativeTags();
 
 	// Ability
-	FGameplayTag Ability_Action_Reload;	// 재장전
+	FGameplayTag Ability_Action_Reload;			// 재장전
+	FGameplayTag Ability_Action_MeleeAttack;	// 근접 평타
 	
 	// Event
-	FGameplayTag GameplayEvent_Character_Death; // 캐릭터 사망
-	FGameplayTag GameplayEvent_Ability_Reload_Refill; // 총알 재장전
-	FGameplayTag GameplayEvent_Weapon_OutOfAmmo; // 탄약 0 -> 재장전 요청
-
+	FGameplayTag GameplayEvent_Character_Death;			// 캐릭터 사망
+	FGameplayTag GameplayEvent_Ability_Reload_Refill;	// 총알 재장전
+	FGameplayTag GameplayEvent_Weapon_OutOfAmmo;		// 탄약 0 -> 재장전 요청
+	FGameplayTag GameplayEvent_Melee_Hit;				// 근접 평타 충돌 검사
+	
 	// State
+	FGameplayTag State_Block_Input;		// 입력 금지
+	FGameplayTag State_Block_Ability;	// 스킬 사용 금지
+	
 	FGameplayTag State_Dead;			// 사망
+
+	FGameplayTag State_Invulnerable;	// 무적
+	FGameplayTag State_Untargetable;	// 지정 불가
+	
 	FGameplayTag State_Movement_Air;	// 캐릭터 공중에 뜸
 	FGameplayTag State_Combat_Firing;	// 캐릭터 사격 중
 
 	// GameplayCue
 	FGameplayTag GameplayCue_Character_Death;	// 죽음
+	FGameplayTag GameplayCue_Tracer_Blink;		// 트레이서 점멸
 
 	// Data
-	FGameplayTag Data_HealAmount;	// 힐량
+	FGameplayTag Data_Damage;					// 데미지
+	FGameplayTag Data_Damage_Melee;				// 근접 평타 데미지
+	FGameplayTag Data_Damage_WeaponFire;		// 무기 발사 기본 데미지
+	
+	FGameplayTag Data_HealAmount;				// 힐량
 	
 	// Sound
 	FGameplayTag Sound_Voice_Death;

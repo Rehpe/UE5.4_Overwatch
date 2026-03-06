@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Character/OWSnapshotComponent.h"
 #include "GAS/GA/OWGameplayAbility.h"
 #include "OWGA_Tracer_Recall.generated.h"
 
 /**
  * 
  */
+
 UCLASS()
 class OVERWATCH_API UOWGA_Tracer_Recall : public UOWGameplayAbility
 {
@@ -37,6 +39,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> RefillAmmoEffectClass;			// 재장전
 
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAnimMontage> RecallMontage;						// Recall 애니메이션
 private:
-	FActiveGameplayEffectHandle ActiveStateEffectHandle;
+	UPROPERTY()
+	FOWRecallSnapshot CachedSnapshot;
+	
+	FActiveGameplayEffectHandle ActiveStateEffectHandle;		// GA 종료용 핸들
+
+	bool bHasValidSnapshot = false;
 };

@@ -37,7 +37,14 @@ void UOWSnapshotComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 		// 신규 스냅샷 생성 및 데이터 채우기
 		FOWRecallSnapshot NewSnapshot;
 		NewSnapshot.Location = OWCharacter->GetActorLocation();
-		NewSnapshot.Rotation = OWCharacter->GetActorRotation();
+		if(AController* Controller = OWCharacter->GetController())
+		{
+			NewSnapshot.ControlRotation = Controller->GetControlRotation();
+		}
+		else
+		{
+			NewSnapshot.ControlRotation = OWCharacter->GetActorRotation();
+		}
 		NewSnapshot.Health = OWCharacter->GetHealth(); 
 		NewSnapshot.Timestamp = GetWorld()->GetTimeSeconds();
 

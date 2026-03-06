@@ -48,17 +48,15 @@ void UOWGA_Reload::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
-	
-	// 3p 기준 몽타주 재생
-	UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
-			this,
-			NAME_None,
-			AnimData.Montage_3P, 
-			1.0f,
-			NAME_None,
-			false,	// GA 강제종료시 애니메이션도 종료할 것인가?
-			1.0f
-		);
+	else
+	{
+		// 3p 기준 몽타주 재생
+		UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
+				this,
+				TEXT("ReloadMontage"),
+				AnimData.Montage_3P, 
+				1.0f
+			);
 		
 		MontageTask->OnCompleted.AddDynamic(this, &ThisClass::OnMontageFinished);
 		MontageTask->OnInterrupted.AddDynamic(this, &ThisClass::OnMontageFinished);
@@ -66,34 +64,30 @@ void UOWGA_Reload::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 		MontageTask->OnCancelled.AddDynamic(this, &ThisClass::OnMontageFinished);
 		MontageTask->ReadyForActivation();
 
-	// 1p일 경우 1p 몽타주 재생
-	if (IsLocallyControlled() && AnimData.Montage_1P)
-	{
-		USkeletalMeshComponent* Mesh1p = OWCharacter->GetFirstPersonMesh(); 
-		if (Mesh1p && Mesh1p->GetAnimInstance())
+		// 1p일 경우 1p 몽타주 재생
+		if (IsLocallyControlled() && AnimData.Montage_1P)
 		{
-			Mesh1p->GetAnimInstance()->Montage_Play(AnimData.Montage_1P);
+			USkeletalMeshComponent* Mesh1p = OWCharacter->GetFirstPersonMesh(); 
+			if (Mesh1p && Mesh1p->GetAnimInstance())
+			{
+				Mesh1p->GetAnimInstance()->Montage_Play(AnimData.Montage_1P);
+			}
 		}
-	}
-	
-	FGameplayTag RefillTag = FOWGameplayTags::Get().GameplayEvent_Ability_Reload_Refill;
+		
+		FGameplayTag RefillTag = FOWGameplayTags::Get().GameplayEvent_Ability_Reload_Refill;
 
-	// Reload Montage에서 Refill Notify가 올 때까지 대기
-	UAbilityTask_WaitGameplayEvent* EventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
-		this, RefillTag, nullptr, false, false
-	);
+		// Reload Montage에서 Refill Notify가 올 때까지 대기
+		UAbilityTask_WaitGameplayEvent* EventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+			this, RefillTag, nullptr, false, false
+		);
     
-	EventTask->EventReceived.AddDynamic(this, &ThisClass::OnRefillEvent);
-	EventTask->ReadyForActivation();
-	
-	//EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		EventTask->EventReceived.AddDynamic(this, &ThisClass::OnRefillEvent);
+		EventTask->ReadyForActivation();
+	}
 }
 
 void UOWGA_Reload::OnMontageFinished()
 {
-	UE_LOG(LogTemp, Error, TEXT("!!! GA_Reload Finished !!! IsServer: %s"), 
-			GetOwningActorFromActorInfo()->HasAuthority() ? TEXT("TRUE") : TEXT("FALSE"));
-	
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 

@@ -15,7 +15,7 @@ struct FOWRecallSnapshot
 	FVector Location = FVector::ZeroVector;
 
 	UPROPERTY(BlueprintReadOnly)
-	FRotator Rotation = FRotator::ZeroRotator;
+	FRotator ControlRotation = FRotator::ZeroRotator;	// 시야방향(몸통방향X)
 
 	UPROPERTY(BlueprintReadOnly)
 	float Health = 0.0f;
@@ -32,10 +32,13 @@ class OVERWATCH_API UOWSnapshotComponent : public UActorComponent
 public:	
 	UOWSnapshotComponent();
 	
-	// 3초 전의 가장 근접한 데이터를 찾아 반환합니다.
+	// [서버용] 3초 전 목적지 파악
 	UFUNCTION(BlueprintCallable)
 	bool GetRecallTargetSnapshot(FOWRecallSnapshot& OutSnapshot);
 
+	// [클라용] 버퍼 전체 복사본 전달
+	FORCEINLINE TArray<FOWRecallSnapshot> GetSnapshotBuffer() const { return SnapshotBuffer; }
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

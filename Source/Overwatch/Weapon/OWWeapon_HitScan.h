@@ -25,8 +25,4 @@ protected:
 	// 연사 속도 (발사 간격, 0.1 = 초당 10발)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Config")
 	float FireRate = 0.1f;
-
-	// 총알(GE) 종류를 블루프린트에서 설정할 수 있게 변수 추가
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GAS")
-	TSubclassOf<class UGameplayEffect> DamageEffectClass;
 };

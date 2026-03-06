@@ -12,21 +12,35 @@ void FOWGameplayTags::InitializeNativeTags()
 
 	// Ability
 	GameplayTags.AddTag(GameplayTags.Ability_Action_Reload, "Ability.Action.Reload", "Ability.Action.Reload");
+	GameplayTags.AddTag(GameplayTags.Ability_Action_MeleeAttack, "Ability.Action.MeleeAttack", "Ability.Action.MeleeAttack");
 
 	// Event
 	GameplayTags.AddTag(GameplayTags.GameplayEvent_Character_Death, "GameplayEvent.Character.Death", "GameplayEvent.Character.Death");
 	GameplayTags.AddTag(GameplayTags.GameplayEvent_Ability_Reload_Refill, "GameplayEvent.Ability.Reload.Refill", "GameplayEvent.Ability.Reload.Refill");
 	GameplayTags.AddTag(GameplayTags.GameplayEvent_Weapon_OutOfAmmo, "GameplayEvent.Weapon.OutOfAmmo", "GameplayEvent.Weapon.OutOfAmmo");
-
+	GameplayTags.AddTag(GameplayTags.GameplayEvent_Melee_Hit, "GameplayEvent.Melee.Hit", "GameplayEvent.Melee.Hit");
+	
 	// State
-	GameplayTags.AddTag(GameplayTags.State_Movement_Air, "State.Movement.Air", "State.Movement.Air");
+	GameplayTags.AddTag(GameplayTags.State_Block_Input, "State.Block.Input", "State.Block.Input");
+	GameplayTags.AddTag(GameplayTags.State_Block_Ability, "State.Block.Ability", "State.Block.Ability");
+
 	GameplayTags.AddTag(GameplayTags.State_Dead, "State.Dead", "State.Dead");
+
+	GameplayTags.AddTag(GameplayTags.State_Invulnerable, "State.Invulnerable", "State.Invulnerable");
+	GameplayTags.AddTag(GameplayTags.State_Untargetable, "State.Untargetable", "State.Untargetable");
+	
+	GameplayTags.AddTag(GameplayTags.State_Movement_Air, "State.Movement.Air", "State.Movement.Air");
 	GameplayTags.AddTag(GameplayTags.State_Combat_Firing, "State.Combat.Firing", "State.Combat.Firing");
 
 	// GameplayCue
 	GameplayTags.AddTag(GameplayTags.GameplayCue_Character_Death, "GameplayCue.Character.Death", "GameplayCue.Character.Death");
+	GameplayTags.AddTag(GameplayTags.GameplayCue_Tracer_Blink, "GameplayCue.Tracer.Blink", "GameplayCue.Tracer.Blink");
 
 	// Data
+	GameplayTags.AddTag(GameplayTags.Data_Damage, "Data.Damage", "Data.Damage");
+	GameplayTags.AddTag(GameplayTags.Data_Damage_Melee, "Data.Damage.Melee", "Data.Damage.Melee");
+	GameplayTags.AddTag(GameplayTags.Data_Damage_WeaponFire, "Data.Damage.WeaponFire", "Data.Damage.WeaponFire");
+	
 	GameplayTags.AddTag(GameplayTags.Data_HealAmount, "Data.HealAmount", "Data.HealAmount");
 	
 	// Sound

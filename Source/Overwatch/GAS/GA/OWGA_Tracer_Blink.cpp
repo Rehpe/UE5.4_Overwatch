@@ -5,6 +5,8 @@
 
 #include "Character/OWCharacterBase.h"
 #include "Abilities/Tasks/AbilityTask_ApplyRootMotionConstantForce.h"
+#include "GAS/OWAbilitySystemComponent.h"
+#include "GAS/Tags/OWGameplayTags.h"
 
 UOWGA_Tracer_Blink::UOWGA_Tracer_Blink()
 	: BlinkDistance(700.0f)
@@ -73,6 +75,14 @@ void UOWGA_Tracer_Blink::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 	{
 		RootMotionTask->OnFinish.AddDynamic(this, &ThisClass::OnBlinkFinished);
 		RootMotionTask->ReadyForActivation();
+
+		if(UAbilitySystemComponent* ASC =ActorInfo->AbilitySystemComponent.Get())
+		{
+			FGameplayCueParameters Params;
+			Params.Location = GetAvatarActorFromActorInfo()->GetActorLocation();
+			UE_LOG(LogTemp, Warning, TEXT("Executing GCN with Tag: %s"), *FOWGameplayTags::Get().GameplayCue_Tracer_Blink.ToString());
+			ASC->ExecuteGameplayCue(FOWGameplayTags::Get().GameplayCue_Tracer_Blink, Params);
+		}
 	}
 	else
 	{

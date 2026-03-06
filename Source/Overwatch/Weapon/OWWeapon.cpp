@@ -3,8 +3,12 @@
 
 #include "Weapon/OWWeapon.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 #include "Overwatch.h"
+#include "GAS/Tags/OWGameplayTags.h"
 
+class UAbilitySystemComponent;
 // Sets default values
 AOWWeapon::AOWWeapon()
 {
@@ -31,13 +35,13 @@ AOWWeapon::AOWWeapon()
 	WeaponMesh3P_Main = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh3P_Main"));
 	WeaponMesh3P_Main->SetupAttachment(RootComponent);
 	WeaponMesh3P_Main->SetOwnerNoSee(true);  
-	WeaponMesh3P_Main->bCastHiddenShadow = true;
+	WeaponMesh3P_Main->SetCastShadow(false);
 	WeaponMesh3P_Main->SetCollisionProfileName(TEXT("NoCollision"));
 
 	WeaponMesh3P_Sub = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh3P_Sub"));
 	WeaponMesh3P_Sub->SetupAttachment(RootComponent);
 	WeaponMesh3P_Sub->SetOwnerNoSee(true);
-	WeaponMesh3P_Sub->bCastHiddenShadow = true;
+	WeaponMesh3P_Sub->SetCastShadow(false);
 	WeaponMesh3P_Sub->SetCollisionProfileName(TEXT("NoCollision"));
 }
 
@@ -66,6 +70,40 @@ void AOWWeapon::Equip(USkeletalMeshComponent* CharMesh1P, USkeletalMeshComponent
 void AOWWeapon::Fire()
 {
 	//OWLOG_SCREEN(TEXT("AOWWeapon::Fire Called(Base)"));
+}
+
+void AOWWeapon::ApplyWeaponDamage(const FHitResult& HitResult) const
+{
+	AActor* HitActor = HitResult.GetActor();
+	
+	if (!HitActor || !DamageEffectClass || HitActor == GetOwner()) return;
+
+	UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner());
+	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitActor);
+
+	if (SourceASC && TargetASC)
+	{
+		// Context 설정 (누가, 무엇으로 때렸는가)
+		FGameplayEffectContextHandle ContextHandle = SourceASC->MakeEffectContext();
+		ContextHandle.AddSourceObject(this); 
+		ContextHandle.AddHitResult(HitResult);
+
+		// Spec 생성
+		FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, 1.0f, ContextHandle);
+
+		if (SpecHandle.IsValid())
+		{
+			FGameplayTag DamageTag = FOWGameplayTags::Get().Data_Damage; 
+			FGameplayTag IdentityTag = FOWGameplayTags::Get().Data_Damage_WeaponFire; 
+			float FinalDamage = -BaseWeaponFireDamage;
+			SpecHandle.Data.Get()->SetSetByCallerMagnitude(DamageTag, FinalDamage);
+			SpecHandle.Data.Get()->AddDynamicAssetTag(IdentityTag);
+			// 타겟에게 적용
+			SourceASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), TargetASC);
+                
+			OWLOG_SCREEN(TEXT("Applied %f Weapon Damage to %s"), FinalDamage, *HitActor->GetName());
+		}
+	}
 }
 
 

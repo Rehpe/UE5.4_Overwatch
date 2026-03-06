@@ -22,7 +22,7 @@ public:
 
 protected:
 	UFUNCTION()
-	virtual void OnMontageFinished();
+	void OnMontageFinished();
 
 	UFUNCTION()
 	void OnRefillEvent(FGameplayEventData Payload);

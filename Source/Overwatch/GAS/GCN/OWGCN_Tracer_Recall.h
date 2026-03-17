@@ -29,8 +29,11 @@ protected:
 	UParticleSystem* RecallEndFX_3P;  
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	class USoundBase* RecallSound_1P;
+	class USoundBase* RecallSFX_1P;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	class USoundBase* RecallVoice_1P;
+	
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UMaterialInterface> PP_RecallMaterial;
 

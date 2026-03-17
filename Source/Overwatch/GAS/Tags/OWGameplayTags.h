@@ -23,10 +23,11 @@ public:
 	FGameplayTag Ability_Action_MeleeAttack;	// 근접 평타
 	
 	// Event
-	FGameplayTag GameplayEvent_Character_Death;			// 캐릭터 사망
-	FGameplayTag GameplayEvent_Ability_Reload_Refill;	// 총알 재장전
-	FGameplayTag GameplayEvent_Weapon_OutOfAmmo;		// 탄약 0 -> 재장전 요청
-	FGameplayTag GameplayEvent_Melee_Hit;				// 근접 평타 충돌 검사
+	FGameplayTag GameplayEvent_Character_Death;						// 캐릭터 사망
+	FGameplayTag GameplayEvent_Ability_Reload_Refill;				// 총알 재장전
+	FGameplayTag GameplayEvent_Ability_Tracer_Ult_ThrowBomb;		// 트레이서 궁폭탄 투척
+	FGameplayTag GameplayEvent_Weapon_OutOfAmmo;					// 탄약 0 -> 재장전 요청
+	FGameplayTag GameplayEvent_Melee_Hit;							// 근접 평타 충돌 검사
 	
 	// State
 	FGameplayTag State_Block_Input;		// 입력 금지
@@ -41,17 +42,30 @@ public:
 	FGameplayTag State_Combat_Firing;	// 캐릭터 사격 중
 
 	// GameplayCue
-	FGameplayTag GameplayCue_Character_Death;	// 죽음
-	FGameplayTag GameplayCue_Tracer_Blink;		// 트레이서 점멸
-
+	// Common
+	FGameplayTag GameplayCue_Character_WeaponFire;		// 무기 공격
+	FGameplayTag GameplayCue_Character_Jump;			// 점프
+	FGameplayTag GameplayCue_Character_MeleeAttack;		// 근접 공격
+	FGameplayTag GameplayCue_Character_Death;			// 죽음
+	
+	// Tracer
+	FGameplayTag GameplayCue_Tracer_Blink;			// 트레이서 점멸
+	FGameplayTag GameplayCue_Tracer_Ult_Cast;		// 트레이서 궁: 투척
+	FGameplayTag GameplayCue_Tracer_Ult_Explode;	// 트레이서 궁: 폭파
+	
 	// Data
 	FGameplayTag Data_Damage;					// 데미지
 	FGameplayTag Data_Damage_Melee;				// 근접 평타 데미지
 	FGameplayTag Data_Damage_WeaponFire;		// 무기 발사 기본 데미지
+	FGameplayTag Data_Damage_Tracer_Ult;		// 트레이서 궁폭탄 데미지
 	
 	FGameplayTag Data_HealAmount;				// 힐량
 	
 	// Sound
+	// SFX
+	FGameplayTag Sound_SFX_MeleeAttack;
+	
+	// Voice
 	FGameplayTag Sound_Voice_Death;
 	FGameplayTag Sound_Voice_Pain;
 	FGameplayTag Sound_Voice_Jumping;

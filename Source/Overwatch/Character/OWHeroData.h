@@ -6,6 +6,7 @@
 #include "Engine/DataAsset.h"
 #include "OWHeroData.generated.h"
 
+class UGameplayEffect;
 /**
  * 영웅별 Mesh와 AnimBP 정보를 담는 DA
  * SoftObjectPtr로 필요 시에만 로딩함
@@ -23,17 +24,17 @@ public:
 	
 public:
 	// 1p
-	UPROPERTY(EditDefaultsOnly, Category = "Visuals|1P")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visuals|1P")
 	TSoftObjectPtr<USkeletalMesh> Mesh1P;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Visuals|1P")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visuals|1P")
 	TSoftClassPtr<UAnimInstance> AnimClass1P;
 
 	// 3p
-	UPROPERTY(EditDefaultsOnly, Category = "Visuals|3P")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visuals|3P")
 	TSoftObjectPtr<USkeletalMesh> Mesh3P;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Visuals|3P")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visuals|3P")
 	TSoftClassPtr<UAnimInstance> AnimClass3P;
 
 	// SkillSet
@@ -42,30 +43,33 @@ public:
 
 	// GAS AttributeSet Init
 	// 공통
-	UPROPERTY(EditDefaultsOnly, Category = "GAS|Init")
+	UPROPERTY(EditDefaultsOnly,  BlueprintReadOnly, Category = "GAS|Init")
 	TSubclassOf<UGameplayEffect> InitState_Base;
 
 	// 탄약
-	UPROPERTY(EditDefaultsOnly, Category = "GAS|Init")
+	UPROPERTY(EditDefaultsOnly,  BlueprintReadOnly, Category = "GAS|Init")
 	TSubclassOf<UGameplayEffect> InitState_Weapon;
 
 	// 스킬/스태미너
-	UPROPERTY(EditDefaultsOnly, Category = "GAS|Init")
+	UPROPERTY(EditDefaultsOnly,  BlueprintReadOnly, Category = "GAS|Init")
 	TSubclassOf<UGameplayEffect> InitState_Skill;
 	
-	
 	// Weapon
-	UPROPERTY(EditDefaultsOnly, Category = "Equipment")
-	TSubclassOf<AActor> WeaponClass;
+	UPROPERTY(EditDefaultsOnly,  BlueprintReadOnly, Category = "Equipment")
+	TSubclassOf<AOWWeapon> WeaponClass;
 
 	// Voice
-	UPROPERTY(EditDefaultsOnly, Category = "Voice")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Voice")
 	TObjectPtr<class UOWHeroVoiceData> VoiceData;
 
+	// SFX
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Voice")
+	TObjectPtr<class UOWHeroSFXData> SFXData;
+	
 	// Combat
-	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
 	float BaseMeleeAttackDamage = 30.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")
 	float BaseMeleeAttackRange = 150.0f;
 };

@@ -25,13 +25,15 @@ void UOWGA_MeleeAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
+	HitActors.Empty();
+	
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
+	
+	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
 	AOWCharacterBase* OWCharacter = GetOWCharacter();
 	if (!OWCharacter)
@@ -88,16 +90,8 @@ void UOWGA_MeleeAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
     
 		EventTask->EventReceived.AddDynamic(this, &ThisClass::OnMeleeHitEvent);
 		EventTask->ReadyForActivation();
-	}
-}
 
-void UOWGA_MeleeAttack::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
-{
-	Super::OnAvatarSet(ActorInfo, Spec);
-	// 어빌리티 부여 시 아바타의 HeroData를 찾아와 캐싱
-	if (AOWCharacterBase* OWCharacater = GetOWCharacter())
-	{
-		HeroData = OWCharacater->GetHeroData(); 
+		PlayEffects();
 	}
 }
 
@@ -110,19 +104,31 @@ void UOWGA_MeleeAttack::OnMeleeHitEvent(FGameplayEventData Payload)
 {
 	// 조작감을 위해 클라이언트 예측 + 서버 권위
 	if (!HasAuthorityOrPredictionKey(CurrentActorInfo, &CurrentActivationInfo)) return;
-
+	
+	AOWCharacterBase* OWCharacter = GetOWCharacter();
+	if(!OWCharacter) return;
+	
 	// Trace
 	FHitResult HitResult;
-	bool bHit = CheckMeleeHitTrace(HitResult); 
-
+	bool bHit = CheckMeleeHitTrace(HitResult);
+	
 	if (bHit)
 	{
-		AActor* HitActor = HitResult.GetActor();
-		if (HitActor)
+		AActor* TargetActor = HitResult.GetActor();
+		if (TargetActor)
 		{
-			UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo();
-			UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitActor);
+			// 이미 명단에 있다면 중복 -> 무시
+			if (HitActors.Contains(TargetActor))
+				return;
 
+			// 명단에 없다면 추가한다
+			HitActors.Add(TargetActor);
+			
+			UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo();
+			UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
+
+			if(!SourceASC || !TargetASC) return;
+			
 			// 죽음 / 무적 / 지정불가시 무시
 			if (TargetASC->HasMatchingGameplayTag(FOWGameplayTags::Get().State_Dead)||
 				TargetASC->HasMatchingGameplayTag(FOWGameplayTags::Get().State_Invulnerable) ||
@@ -132,29 +138,55 @@ void UOWGA_MeleeAttack::OnMeleeHitEvent(FGameplayEventData Payload)
 			}
 
 			// 아군일 경우 무시
-			
-			if (SourceASC && TargetASC && DamageEffectClass)
-			{
-				// 문맥(Context) : 누가, 누구를, 무엇으로 때렸나 정보
-				FGameplayEffectContextHandle ContextHandle = SourceASC->MakeEffectContext();
-				ContextHandle.AddSourceObject(this); // 무기정보 등록
-				ContextHandle.AddHitResult(HitResult); // HitResult 등록
-				
-				FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, 1.0f, ContextHandle); // Spec 생성
 
-				if (SpecHandle.IsValid() && HeroData->BaseMeleeAttackDamage > 0.0f)
+			// 피격용 GCN
+			
+			// 데미지는 서버만
+			if(OWCharacter->HasAuthority())
+			{
+				if (SourceASC && TargetASC && DamageEffectClass)
 				{
-					FGameplayTag DamageTag = FOWGameplayTags::Get().Data_Damage; 
-					FGameplayTag IdentityTag = FOWGameplayTags::Get().Data_Damage_Melee;
-					float FinalDamage = -HeroData->BaseMeleeAttackDamage;
-					SpecHandle.Data.Get()->SetSetByCallerMagnitude(DamageTag, FinalDamage);
-					SpecHandle.Data.Get()->AddDynamicAssetTag(IdentityTag);
-					SourceASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), TargetASC);
+					// 문맥(Context) : 누가, 누구를, 무엇으로 때렸나 정보
+					FGameplayEffectContextHandle ContextHandle = SourceASC->MakeEffectContext();
+					ContextHandle.AddSourceObject(this); // 무기정보 등록
+					ContextHandle.AddHitResult(HitResult); // HitResult 등록
+				
+					FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, 1.0f, ContextHandle); // Spec 생성
+					UOWHeroData* HeroData = OWCharacter->GetHeroData();
+					if(!HeroData) return;
+				
+					if (SpecHandle.IsValid() && HeroData->BaseMeleeAttackDamage > 0.0f)
+					{
+						FGameplayTag DamageTag = FOWGameplayTags::Get().Data_Damage; 
+						FGameplayTag IdentityTag = FOWGameplayTags::Get().Data_Damage_Melee;
+						float FinalDamage = -HeroData->BaseMeleeAttackDamage;
+						SpecHandle.Data.Get()->SetSetByCallerMagnitude(DamageTag, FinalDamage);
+						SpecHandle.Data.Get()->AddDynamicAssetTag(IdentityTag);
+						SourceASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), TargetASC);
 					
-					OWLOG_SCREEN(TEXT("Applied %f Weapon Damage to %s"), FinalDamage, *HitActor->GetName());
+						OWLOG_SCREEN(TEXT("Applied %f Weapon Damage to %s"), FinalDamage, *TargetActor->GetName());
+					}
 				}
 			}
 		}
+	}
+}
+
+void UOWGA_MeleeAttack::PlayEffects()
+{
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	if (ASC)
+	{
+		FGameplayCueParameters CueParams;
+		AActor* AvatarActor = GetAvatarActorFromActorInfo(); 
+		CueParams.Instigator = AvatarActor;
+		if (AvatarActor)
+		{
+			CueParams.Location = AvatarActor->GetActorLocation();
+		}
+		FGameplayTag MeleeAttackCueTag = FOWGameplayTags::Get().GameplayCue_Character_MeleeAttack;
+		
+		ASC->ExecuteGameplayCue(MeleeAttackCueTag, CueParams);
 	}
 }
 

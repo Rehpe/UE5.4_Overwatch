@@ -58,9 +58,10 @@ bool AOWGCN_Tracer_Recall::OnActive_Implementation(AActor* MyTarget, const FGame
 			TargetCamera->PostProcessSettings.AddBlendable(RecallMID, 1.0f);
 		}
 		// SFX
-		if (RecallSound_1P)
+		if (RecallSFX_1P && RecallVoice_1P)
 		{
-			UGameplayStatics::PlaySound2D(this, RecallSound_1P);
+			UGameplayStatics::PlaySound2D(this, RecallSFX_1P);
+			UGameplayStatics::PlaySound2D(this, RecallVoice_1P);
 		}
 		SetActorTickEnabled(true);
 	}

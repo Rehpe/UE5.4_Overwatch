@@ -20,6 +20,7 @@
 #include "GAS/Attributes/OWAttributeSet_Base.h"
 #include "GAS/Tags/OWGameplayTags.h"
 #include "Input/OWEnhancedInputComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "Weapon/OWWeapon.h"
 
 
@@ -80,6 +81,7 @@ void AOWCharacterBase::PossessedBy(AController* NewController)
 
 	InitAbilityActorInfo();  // ASC 초기화
 	ApplyHeroData(); // 영웅 별 데이터 적용
+	InitASCListeners();	// 태그 감시
 }
 
 void AOWCharacterBase::BeginPlay()
@@ -96,6 +98,20 @@ void AOWCharacterBase::BeginPlay()
 				Subsystem->AddMappingContext(DefaultMappingContext, 0);
 			}
 		}
+	}
+}
+
+void AOWCharacterBase::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+	// 클라이언트에서 ASC 초기화
+	InitAbilityActorInfo();
+	InitASCListeners();
+	
+	// BP에 미리 할당한 HeroData 갱신용
+	if(HeroData)
+	{
+		OnRep_HeroData();
 	}
 }
 
@@ -119,6 +135,23 @@ void AOWCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 								&AOWCharacterBase::Input_AbilityInputTagReleased,
 								BindHandles
 		);
+	}
+}
+
+void AOWCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AOWCharacterBase, HeroData);
+	DOREPLIFETIME(AOWCharacterBase, Weapon);
+}
+
+void AOWCharacterBase::OnWeaponSet(AOWWeapon* NewWeapon)
+{
+	Weapon = NewWeapon;
+
+	if (FirstPersonMesh && GetMesh())
+	{
+		Weapon->Equip(FirstPersonMesh, GetMesh());
 	}
 }
 
@@ -158,38 +191,51 @@ void AOWCharacterBase::ApplyHeroData()
 	}
 
 	// SkillSet GAS
-	if (HasAuthority() && ASC)	// Late Join 대비 Authority 검사
+	if (HasAuthority()) // Late Join 대비 Authority 검사
 	{
-		if (HeroData && HeroData->AbilitySet)
+		if (ASC && HeroData->AbilitySet)
 		{
 			HeroData->AbilitySet->GiveToAbilitySystem(ASC, this);
 		}
-	}
-
-	// Weapon
-	if (Weapon)
-	{
-		Weapon->Destroy();
-		Weapon = nullptr;
-	}
-	if (HeroData->WeaponClass)
-	{
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;      // 무기 주인
-		SpawnParams.Instigator = this; // 가해자 
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn; // 무조건 소환
 		
-		AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(HeroData->WeaponClass, GetTransform(), SpawnParams);
-		Weapon = Cast<AOWWeapon>(SpawnedActor);
-		if (Weapon)
+		if (HeroData->WeaponClass)
 		{
-			Weapon->Equip(FirstPersonMesh, GetMesh());
+			if(Weapon)
+			{
+				Weapon->Destroy();
+				Weapon = nullptr;
+			}
+			
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this; // 무기 주인
+			SpawnParams.Instigator = this; // 가해자 
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn; // 무조건 소환
+
+			AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(HeroData->WeaponClass, GetTransform(), SpawnParams);
+			Weapon = Cast<AOWWeapon>(SpawnedActor);
+			if (Weapon)
+			{
+				Weapon->SetOwner(this);
+				Weapon->Equip(FirstPersonMesh, GetMesh());	
+			}
 		}
+	}
+}
+
+void AOWCharacterBase::OnRep_HeroData()
+{
+	ApplyHeroData();
+	
+	if (Weapon && FirstPersonMesh && GetMesh())
+	{
+		Weapon->Equip(FirstPersonMesh, GetMesh());
 	}
 }
 
 void AOWCharacterBase::InitAttributes()
 {
+	if(!HasAuthority()) return;
+	
 	if (!ASC || !HeroData)
 	{
 		return;
@@ -226,6 +272,48 @@ void AOWCharacterBase::InitAttributes()
 		if (SpecHandle.IsValid())
 		{
 			GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), GetAbilitySystemComponent());
+		}
+	}
+}
+
+void AOWCharacterBase::InitASCListeners()
+{
+	if (ASC)
+	{
+		// State.Dead 
+		ASC->RegisterGameplayTagEvent(FOWGameplayTags::Get().State_Dead, EGameplayTagEventType::NewOrRemoved)
+		   .AddUObject(this, &AOWCharacterBase::OnDeathTagChanged);
+	}
+}
+
+void AOWCharacterBase::OnDeathTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	// 태그가 추가되었다면
+	if (NewCount > 0)
+	{
+		// 캡슐 콜리전 해제
+		if (UCapsuleComponent* Capsule = GetCapsuleComponent())
+		{
+			Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		}
+
+		// 이동 및 관성 정지
+		if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+		{
+			MoveComp->StopMovementImmediately();
+			MoveComp->DisableMovement();
+		}
+		
+		if (USkeletalMeshComponent* MyMesh = GetMesh())
+		{
+			// 콜리전 프로파일 변경
+			MyMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+			MyMesh->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+            
+			// 랙돌 활성화
+			MyMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			MyMesh->SetCollisionProfileName(FName("Ragdoll"));
+			MyMesh->SetSimulatePhysics(true);
 		}
 	}
 }
@@ -311,13 +399,6 @@ void AOWCharacterBase::Input_Look(const struct FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
-}
-
-void AOWCharacterBase::OnRep_PlayerState()
-{
-	Super::OnRep_PlayerState();
-	// 클라이언트에서 ASC 초기화
-	InitAbilityActorInfo();
 }
 
 void AOWCharacterBase::InitAbilityActorInfo()

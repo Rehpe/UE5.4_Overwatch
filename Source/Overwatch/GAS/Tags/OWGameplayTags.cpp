@@ -10,17 +10,18 @@ void FOWGameplayTags::InitializeNativeTags()
 {
 	UGameplayTagsManager& Manager = UGameplayTagsManager::Get();
 
-	// Ability
+	// ==== Ability
 	GameplayTags.AddTag(GameplayTags.Ability_Action_Reload, "Ability.Action.Reload", "Ability.Action.Reload");
 	GameplayTags.AddTag(GameplayTags.Ability_Action_MeleeAttack, "Ability.Action.MeleeAttack", "Ability.Action.MeleeAttack");
 
-	// Event
+	// ==== Event
 	GameplayTags.AddTag(GameplayTags.GameplayEvent_Character_Death, "GameplayEvent.Character.Death", "GameplayEvent.Character.Death");
 	GameplayTags.AddTag(GameplayTags.GameplayEvent_Ability_Reload_Refill, "GameplayEvent.Ability.Reload.Refill", "GameplayEvent.Ability.Reload.Refill");
+	GameplayTags.AddTag(GameplayTags.GameplayEvent_Ability_Tracer_Ult_ThrowBomb, "GameplayEvent.Ability.Tracer.Ult.ThrowBomb", "GameplayEvent.Ability.Tracer.Ult.ThrowBomb");
 	GameplayTags.AddTag(GameplayTags.GameplayEvent_Weapon_OutOfAmmo, "GameplayEvent.Weapon.OutOfAmmo", "GameplayEvent.Weapon.OutOfAmmo");
 	GameplayTags.AddTag(GameplayTags.GameplayEvent_Melee_Hit, "GameplayEvent.Melee.Hit", "GameplayEvent.Melee.Hit");
 	
-	// State
+	// ==== State
 	GameplayTags.AddTag(GameplayTags.State_Block_Input, "State.Block.Input", "State.Block.Input");
 	GameplayTags.AddTag(GameplayTags.State_Block_Ability, "State.Block.Ability", "State.Block.Ability");
 
@@ -32,18 +33,31 @@ void FOWGameplayTags::InitializeNativeTags()
 	GameplayTags.AddTag(GameplayTags.State_Movement_Air, "State.Movement.Air", "State.Movement.Air");
 	GameplayTags.AddTag(GameplayTags.State_Combat_Firing, "State.Combat.Firing", "State.Combat.Firing");
 
-	// GameplayCue
+	// ==== GameplayCue
+	// 공용
+	GameplayTags.AddTag(GameplayTags.GameplayCue_Character_WeaponFire, "GameplayCue.Character.WeaponFire", "GameplayCue.Character.WeaponFire");
+	GameplayTags.AddTag(GameplayTags.GameplayCue_Character_Jump, "GameplayCue.Character.Jump", "GameplayCue.Character.Jump");
+	GameplayTags.AddTag(GameplayTags.GameplayCue_Character_MeleeAttack, "GameplayCue.Character.MeleeAttack", "GameplayCue.Character.MeleeAttack");
 	GameplayTags.AddTag(GameplayTags.GameplayCue_Character_Death, "GameplayCue.Character.Death", "GameplayCue.Character.Death");
-	GameplayTags.AddTag(GameplayTags.GameplayCue_Tracer_Blink, "GameplayCue.Tracer.Blink", "GameplayCue.Tracer.Blink");
 
-	// Data
+	// Tracer
+	GameplayTags.AddTag(GameplayTags.GameplayCue_Tracer_Blink, "GameplayCue.Tracer.Blink", "GameplayCue.Tracer.Blink");
+	GameplayTags.AddTag(GameplayTags.GameplayCue_Tracer_Ult_Cast, "GameplayCue.Tracer.Ult.Cast", "GameplayCue.Tracer.Ult.Cast");
+	GameplayTags.AddTag(GameplayTags.GameplayCue_Tracer_Ult_Explode, "GameplayCue.Tracer.Ult.Explode", "GameplayCue.Tracer.Ult.Explode");
+
+	// ===== Data
 	GameplayTags.AddTag(GameplayTags.Data_Damage, "Data.Damage", "Data.Damage");
 	GameplayTags.AddTag(GameplayTags.Data_Damage_Melee, "Data.Damage.Melee", "Data.Damage.Melee");
 	GameplayTags.AddTag(GameplayTags.Data_Damage_WeaponFire, "Data.Damage.WeaponFire", "Data.Damage.WeaponFire");
+	GameplayTags.AddTag(GameplayTags.Data_Damage_Tracer_Ult, "Data.Damage.Tracer.Ult", "Data.Damage.Tracer.Ult");
 	
 	GameplayTags.AddTag(GameplayTags.Data_HealAmount, "Data.HealAmount", "Data.HealAmount");
 	
-	// Sound
+	// ==== Sound
+	// SFX
+	GameplayTags.AddTag(GameplayTags.Sound_SFX_MeleeAttack, "Sound.SFX.MeleeAttack", "Sound.SFX.MeleeAttack");
+	
+	// Voice
 	GameplayTags.AddTag(GameplayTags.Sound_Voice_Death, "Sound.Voice.Death", "Sound.Voice.Death");
 	GameplayTags.AddTag(GameplayTags.Sound_Voice_Pain, "Sound.Voice.Pain", "Sound.Voice.Pain");
 	GameplayTags.AddTag(GameplayTags.Sound_Voice_Jumping, "Sound.Voice.Jumping", "Sound.Voice.Jumping");

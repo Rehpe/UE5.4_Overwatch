@@ -20,14 +20,15 @@ public:
 
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
-	
+
 	UFUNCTION()
 	virtual void OnMontageFinished();
 
 	UFUNCTION()
 	void OnMeleeHitEvent(FGameplayEventData Payload);
 
+	void PlayEffects();
+	
 private:
 	bool CheckMeleeHitTrace(FHitResult& OutHitResult);
 
@@ -37,6 +38,5 @@ protected:
 
 private:
 	UPROPERTY()
-	const UOWHeroData* HeroData;
-	
+	TArray<AActor*> HitActors;	// 데미지 중복 방지를 위한 배열
 };

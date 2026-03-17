@@ -41,9 +41,8 @@ void UOWAttributeSet_Base::PostGameplayEffectExecute(const FGameplayEffectModCal
 			Payload.Instigator = AttackerActor;
 			Payload.Target = GetOwningActor();
 			Payload.ContextHandle = Data.EffectSpec.GetContext();
-			
-			UE_LOG(LogTemp, Error, TEXT("[TAG_CHECK] Sending Tag: %s"), *Payload.EventTag.ToString());
-			
+
+			// GE_Dead 발송
 			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
 				GetOwningActor(), 
 				Payload.EventTag, 
@@ -51,6 +50,16 @@ void UOWAttributeSet_Base::PostGameplayEffectExecute(const FGameplayEffectModCal
 				);
 			
 			UE_LOG(LogTemp, Error, TEXT("YOU DIED! Killed by: %s"), *AttackerName);
+
+			// GCN_Death 발송
+			UAbilitySystemComponent* TargetASC = GetOwningAbilitySystemComponent();
+			if (TargetASC)
+			{
+				FGameplayCueParameters CueParams;
+				CueParams.Instigator = AttackerActor;
+				CueParams.EffectContext = Data.EffectSpec.GetContext(); // 타격 정보 (방향)
+				TargetASC->ExecuteGameplayCue(FOWGameplayTags::Get().GameplayCue_Character_Death, CueParams);
+			}
 		}
 	}
 }

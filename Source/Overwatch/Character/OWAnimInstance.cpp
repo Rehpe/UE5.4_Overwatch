@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GAS/OWAbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
+#include "Overwatch.h"
 #include "GAS/Tags/OWGameplayTags.h"
 
 UOWAnimInstance::UOWAnimInstance()
@@ -89,6 +90,14 @@ void UOWAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		// 사격 중 판정
 		FGameplayTag FiringTag = FOWGameplayTags::Get().State_Combat_Firing;
 		bIsFiring = ASC->HasMatchingGameplayTag(FiringTag);
+	}
+	else
+	{
+		Character = Cast<AOWCharacterBase>(TryGetPawnOwner());
+		if (Character)
+		{
+			ASC = Cast<UOWAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Character));
+		}
 	}
 }
 

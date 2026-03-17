@@ -22,10 +22,13 @@ public:
 	virtual void PossessedBy(AController* NewController) override; // 데디서버환경에서는 서버에서만 호출됨
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	void OnWeaponSet(class AOWWeapon* NewWeapon);
+	
 protected:
 	// -- Mesh --
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data")
+	UPROPERTY(ReplicatedUsing = OnRep_HeroData, BlueprintReadOnly, Category = "Data")
 	TObjectPtr<class UOWHeroData> HeroData;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -33,13 +36,16 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<class USkeletalMeshComponent> FirstPersonMesh; //1인칭 메쉬
+	
+	UFUNCTION()
+	void OnRep_HeroData();
 
 	// HeroData의 데이터 에셋을 읽어 적용
 	void ApplyHeroData();
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<class AOWWeapon> Weapon;
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attribute")
 	TObjectPtr<class UOWAttributeSet_Base> AttributeSet_Base;
 
@@ -48,9 +54,15 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attribute")
 	TObjectPtr<class UOWAttributeSet_Skill> AttributeSet_Skill;
-
+	
 	// 영웅별 AttributeSet 3종을 초기화
 	virtual void InitAttributes();
+
+	// 각종 상태 태그 변경 감시
+	virtual void InitASCListeners();
+
+	// Death 태그 변경 여부 감시 
+	virtual void OnDeathTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
 
 public:
 	FORCEINLINE TObjectPtr<class USkeletalMeshComponent> GetFirstPersonMesh() const { return FirstPersonMesh; }

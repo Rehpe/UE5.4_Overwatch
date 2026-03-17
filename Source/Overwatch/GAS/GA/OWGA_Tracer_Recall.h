@@ -41,6 +41,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAnimMontage> RecallMontage;						// Recall 애니메이션
+
 private:
 	UPROPERTY()
 	FOWRecallSnapshot CachedSnapshot;

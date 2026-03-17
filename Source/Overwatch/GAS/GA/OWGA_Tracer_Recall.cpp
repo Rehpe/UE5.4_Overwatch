@@ -7,6 +7,7 @@
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Character/OWCharacterBase.h"
 #include "Abilities/Tasks/AbilityTask_WaitDelay.h"
+#include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Character/OWSnapshotComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GAS/Tags/OWGameplayTags.h"
@@ -21,20 +22,30 @@ void UOWGA_Tracer_Recall::ActivateAbility(const FGameplayAbilitySpecHandle Handl
                                           const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
-	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-		return;
-	}
-
+	
 	AOWCharacterBase* OWCharacter = GetOWCharacter();
 	if (!OWCharacter)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
-
+	
+	UCharacterMovementComponent* CMC = Cast<UCharacterMovementComponent>(OWCharacter->GetMovementComponent());
+	if (!CMC)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+	
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+	
+	// 물리 이동 차단 
+	CMC->SetMovementMode(MOVE_None);
+	
 	// Activate 기준 스냅샷 저장
 	UOWSnapshotComponent* SnapshotComp = OWCharacter->FindComponentByClass<UOWSnapshotComponent>();
 	if (SnapshotComp)
@@ -54,7 +65,7 @@ void UOWGA_Tracer_Recall::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 		}
 	}
 	
-	// 애님 몽타주 재생 / 완료 후 실행할 함수 예약
+	// [서버/클라] 애님 몽타주 재생 / 완료 후 실행할 함수 예약
 	if(RecallMontage)
 	{
 		UAbilityTask_PlayMontageAndWait* Task = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
@@ -87,7 +98,6 @@ void UOWGA_Tracer_Recall::ActivateAbility(const FGameplayAbilitySpecHandle Handl
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 	}
-
 }
 
 void UOWGA_Tracer_Recall::EndAbility(const FGameplayAbilitySpecHandle Handle,
@@ -103,7 +113,9 @@ void UOWGA_Tracer_Recall::EndAbility(const FGameplayAbilitySpecHandle Handle,
 		}
 		ActiveStateEffectHandle.Invalidate();
 	}
-	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	bool bShouldReplicateEnd = HasAuthority(&CurrentActivationInfo);
+	
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bShouldReplicateEnd, bWasCancelled);
 }
 
 void UOWGA_Tracer_Recall::OnRecallFinished()
@@ -117,17 +129,17 @@ void UOWGA_Tracer_Recall::OnRecallFinished()
 
 	if (bHasValidSnapshot)
 	{
-		// 순간이동(서버/클라 둘 다)
 		OWCharacter->TeleportTo(CachedSnapshot.Location, CachedSnapshot.ControlRotation, false, true);
 
-		// 텔레포트 직후 캐릭터가 미끄러지는 현상 방지
+		// 텔레포트 직후 캐릭터 물리 상태 복구
 		if (UCharacterMovementComponent* CMC = Cast<UCharacterMovementComponent>(OWCharacter->GetMovementComponent()))
 		{
 			CMC->Velocity = FVector::ZeroVector;
+			CMC->SetMovementMode(MOVE_Walking);
 			CMC->UpdateComponentVelocity();
 		}
-
-		// Recovery는 서버에서만 처리
+		
+		// 서버에서만 처리
 		if (HasAuthority(&CurrentActivationInfo))
 		{
 			// 탄약 재장전
@@ -160,7 +172,10 @@ void UOWGA_Tracer_Recall::OnRecallFinished()
 				}
 			}
 		}
-
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+	}
+	else
+	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 	}
 }

@@ -65,7 +65,7 @@ void UOWGA_Tracer_Blink::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 		BlinkDuration,   // 지속 시간
 		false,           // IsAdditive (기존 속도에 더할 것인가? False = 덮어쓰기)
 		nullptr,         // Strength Curve (없으면 상수 힘)
-		ERootMotionFinishVelocityMode::MaintainLastRootMotionVelocity, // 끝난 후 속도 유지 (관성)
+		ERootMotionFinishVelocityMode::SetVelocity, // 끝난 후 속도 유지 (관성)
 		FVector::ZeroVector,
 		0.0f,
 		bEnableGravity   // 중력 적용 여부
@@ -80,7 +80,6 @@ void UOWGA_Tracer_Blink::ActivateAbility(const FGameplayAbilitySpecHandle Handle
 		{
 			FGameplayCueParameters Params;
 			Params.Location = GetAvatarActorFromActorInfo()->GetActorLocation();
-			UE_LOG(LogTemp, Warning, TEXT("Executing GCN with Tag: %s"), *FOWGameplayTags::Get().GameplayCue_Tracer_Blink.ToString());
 			ASC->ExecuteGameplayCue(FOWGameplayTags::Get().GameplayCue_Tracer_Blink, Params);
 		}
 	}

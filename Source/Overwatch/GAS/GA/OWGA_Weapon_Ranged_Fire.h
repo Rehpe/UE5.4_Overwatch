@@ -25,10 +25,16 @@ public:
 	void FireShot();
 
 protected:
-	// 실제로는 AttributeSet의 AttackSpeed를 참조하는 것이 좋지만, 지금은 변수로 처리
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "OW|Weapon")
-	float FireRate = 0.1f;
-
 	// 연사 타이머 핸들
 	FTimerHandle FireTimerHandle;
+
+	// 단발성 데미지 GE
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<class UGameplayEffect> DamageEffectClass;
+	
+	bool PerformTargeting(FHitResult& OutHitResult, FVector& OutTraceEnd);
+	
+	void ApplyDamage(const FHitResult& HitResult);
+
+	void PlayEffects(bool bHit, const FHitResult& HitResult, const FVector& TraceEnd);
 };

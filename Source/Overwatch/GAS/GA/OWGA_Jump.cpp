@@ -3,9 +3,11 @@
 
 #include "GAS/GA/OWGA_Jump.h"
 
+#include "AbilitySystemComponent.h"
 #include "Overwatch.h"
 #include "Character/OWCharacterBase.h"
 #include "GameFramework/Character.h"
+#include "GAS/Tags/OWGameplayTags.h"
 
 UOWGA_Jump::UOWGA_Jump()
 {
@@ -33,6 +35,8 @@ void UOWGA_Jump::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const 
 	if (OWCharacter)
 		OWCharacter->Jump();
 
+	PlayEffects();
+
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }
 
@@ -40,4 +44,18 @@ void UOWGA_Jump::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGame
 	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+void UOWGA_Jump::PlayEffects()
+{
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	if (ASC)
+	{
+		FGameplayCueParameters CueParams;
+		CueParams.Instigator = GetAvatarActorFromActorInfo(); 
+		
+		FGameplayTag JumpCueTag = FOWGameplayTags::Get().GameplayCue_Character_Jump;
+		
+		ASC->ExecuteGameplayCue(JumpCueTag, CueParams);
+	}
 }

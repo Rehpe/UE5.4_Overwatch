@@ -24,12 +24,17 @@ public:
 	
 	// Event
 	FGameplayTag GameplayEvent_Character_Death;						// 캐릭터 사망
+	FGameplayTag GameplayEvent_Damage_Dealt;							// 가한 데미지 
 	FGameplayTag GameplayEvent_Ability_Reload_Refill;				// 총알 재장전
 	FGameplayTag GameplayEvent_Ability_Tracer_Ult_ThrowBomb;		// 트레이서 궁폭탄 투척
 	FGameplayTag GameplayEvent_Weapon_OutOfAmmo;					// 탄약 0 -> 재장전 요청
 	FGameplayTag GameplayEvent_Melee_Hit;							// 근접 평타 충돌 검사
+	FGameplayTag GameplayEvent_Regen_Stamina;						// 스태미너 리젠 필요
+	
 	
 	// State
+	FGameplayTag State_Regen_Stamina;	// 스태미너 회복
+	
 	FGameplayTag State_Block_Input;		// 입력 금지
 	FGameplayTag State_Block_Ability;	// 스킬 사용 금지
 	
@@ -51,6 +56,7 @@ public:
 	// Tracer
 	FGameplayTag GameplayCue_Tracer_Blink;			// 트레이서 점멸
 	FGameplayTag GameplayCue_Tracer_Ult_Cast;		// 트레이서 궁: 투척
+	FGameplayTag GameplayCue_Tracer_Ult_OnAttached;	// 트레이서 궁: 부착
 	FGameplayTag GameplayCue_Tracer_Ult_Explode;	// 트레이서 궁: 폭파
 	
 	// Data
@@ -74,6 +80,17 @@ public:
 	FGameplayTag Sound_Voice_HealPack;
 	FGameplayTag Sound_Voice_HealthRestoredFriendly;
 	FGameplayTag Sound_Voice_Respawn;
+
+	// UI
+	FGameplayTag UI_Passive;
+	FGameplayTag UI_Barrier;
+	FGameplayTag UI_SkillSlot;
+	FGameplayTag UI_Ult;
+	FGameplayTag UI_Ammo;
+
+	// Damage Modifier
+	FGameplayTag Damage_Modifier_Headshot;	// 헤드샷
+	
 
 protected:
 	// 태그 등록 헬퍼 함수

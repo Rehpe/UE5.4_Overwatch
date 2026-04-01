@@ -33,6 +33,10 @@ public:
 	// 부여할 어빌리티 목록
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Abilities", meta=(TitleProperty=Ability))
 	TArray<FOWAbilitySet_GameplayAbility> GrantedGameplayAbilities;
+
+	// 부여할 기본 패시브 이펙트 목록(궁극기 충전 등)
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effects", meta=(TitleProperty="GameplayEffect"))
+	TArray<TSubclassOf<class UGameplayEffect>> GrantedGameplayEffects;
 	
 	// 모든 어빌리티 목록을 ASC에 등록
 	void GiveToAbilitySystem(class UOWAbilitySystemComponent* OWASC, UObject* SourceObject = nullptr) const;

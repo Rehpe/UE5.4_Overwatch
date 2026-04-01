@@ -3,123 +3,65 @@
 
 #include "Widget/OWUserWidget.h"
 
-#include "GAS/Attributes/OWAttributeSet.h"
-#include "GAS/Attributes/OWAttributeSet_Base.h"
-#include "GAS/Attributes/OWAttributeSet_Skill.h"
-#include "GAS/Attributes/OWAttributeSet_Weapon.h"
-#include "GameplayEffectTypes.h"
+#include "Character/OWCombatComponent.h"
+#include "Character/OWHealthComponent.h"
+#include "GAS/Tags/OWGameplayTags.h"
 
-void UOWUserWidget::InitWidgetWithASC(UAbilitySystemComponent* InASC)
+
+void UOWUserWidget::InitWidgetWithHealthComp_Implementation(class UOWHealthComponent* InHealthComp)
 {
-	if (!InASC) return;
-	TargetASC = InASC;
+	if (!InHealthComp) return;
 
-	// Attribute 구독
-	TargetASC->GetGameplayAttributeValueChangeDelegate(UOWAttributeSet_Base::GetHealthAttribute())
-			 .AddUObject(this, &UOWUserWidget::HealthChangedCallback);
-	
-	TargetASC->GetGameplayAttributeValueChangeDelegate(UOWAttributeSet_Base::GetUltimateChargeAttribute())
-			 .AddUObject(this, &UOWUserWidget::UltChargeChangedCallback);
-	
-	TargetASC->GetGameplayAttributeValueChangeDelegate(UOWAttributeSet_Weapon::GetAmmoAttribute())
-			 .AddUObject(this, &UOWUserWidget::AmmoChangedCallback);
+	// HealthComponent 델리게이트 구독 (ASC 대신 HealthComp를 구독함)
+	InHealthComp->OnHealthChanged.AddDynamic(this, &UOWUserWidget::HandleHealthChanged);
+	InHealthComp->OnMaxHealthChanged.AddDynamic(this, &UOWUserWidget::HandleMaxHealthChanged);
 
-	TargetASC->GetGameplayAttributeValueChangeDelegate(UOWAttributeSet_Skill::GetBarrierAttribute())
-			.AddUObject(this, &UOWUserWidget::BarrierChangedCallback);
-
-
-	// 현재 상태 업데이트
-
-	// Health
-	float CurrentHealth = TargetASC->GetNumericAttribute(UOWAttributeSet_Base::GetHealthAttribute());
-	float MaxHealth = TargetASC->GetNumericAttribute(UOWAttributeSet_Base::GetMaxHealthAttribute());
+	// 체력 초기화
+	float CurrentHealth = InHealthComp->GetHealth();
+	float MaxHealth = InHealthComp->GetMaxHealth();
 	OnHealthChanged(CurrentHealth, CurrentHealth, MaxHealth);
-
-	// UltCharge
-	float CurrentUltCharge = TargetASC->GetNumericAttribute(UOWAttributeSet_Base::GetUltimateChargeAttribute());
-	float MaxUltCharge = TargetASC->GetNumericAttribute(UOWAttributeSet_Base::GetMaxUltimateChargeAttribute());
-	OnUltChargeChanged(CurrentUltCharge, CurrentUltCharge, MaxUltCharge);
-
-	// Ammo
-	float CurrentAmmo = TargetASC->GetNumericAttribute(UOWAttributeSet_Weapon::GetAmmoAttribute());
-	float MaxAmmo = TargetASC->GetNumericAttribute(UOWAttributeSet_Weapon::GetMaxAmmoAttribute());
-	OnAmmoChanged(CurrentAmmo, CurrentAmmo, MaxAmmo);
-
-	// Barrier
-	float CurrentBarrier = TargetASC->GetNumericAttribute(UOWAttributeSet_Skill::GetBarrierAttribute());
-	float MaxBarrier = TargetASC->GetNumericAttribute(UOWAttributeSet_Skill::GetMaxBarrierAttribute());
-	OnBarrierChanged(CurrentBarrier, CurrentBarrier, MaxBarrier);
-
-	// 3. 블루프린트에 "이제 ASC가 연결되었으니 스킬 태그를 등록해라" 라고 알림
-	OnASCAttached();
 }
 
-void UOWUserWidget::RegisterSkillCooldown(FGameplayTag CooldownTag, int32 MaxStacks)
+void UOWUserWidget::InitWidgetWithCombatComp_Implementation(class UOWCombatComponent* InCombatComp)
 {
-	if (!TargetASC.IsValid() || !CooldownTag.IsValid()) return;
+	if (!InCombatComp) return;
+	
+	InCombatComp->OnAttributeChanged.AddDynamic(this, &ThisClass::HandleAttributeChanged);
+	InCombatComp->OnCooldownChanged.AddDynamic(this, &ThisClass::HandleCooldownChanged);
 
-	// 맵에 스킬 태그와 최대 스택 수 저장
-	RegisteredSkillTags.Add(CooldownTag, MaxStacks);
+	/*// 탄약 초기화
+	float CurrentAmmo = InCombatComp->GetAmmo();
+	float MaxAmmo = InCombatComp->GetMaxAmmo();
+	FGameplayTag AmmoTag = FOWGameplayTags::Get().UI_Ammo;
+	OnUIAttributeChanged(AmmoTag, CurrentAmmo, CurrentAmmo, MaxAmmo);
 
-	// 해당 태그의 갯수 변화를 구독
-	TargetASC->RegisterGameplayTagEvent(CooldownTag, EGameplayTagEventType::AnyCountChange)
-			 .AddUObject(this, &UOWUserWidget::OnCooldownTagChanged);
-
-	// 초기 상태 한 번 밀어넣기
-	OnCooldownTagChanged(CooldownTag, TargetASC->GetTagCount(CooldownTag));
+	// 궁극기 충전 초기화
+	float CurrentUltCharge = InCombatComp->GetUltCharge();
+	float MaxUltCharge = InCombatComp->GetMaxUltCharge();
+	FGameplayTag UltChargeTag = FOWGameplayTags::Get().UI_Ult;
+	OnUIAttributeChanged(CurrentHealth, CurrentHealth, MaxHealth);*/
 }
 
-void UOWUserWidget::HealthChangedCallback(const FOnAttributeChangeData& Data)
+void UOWUserWidget::HandleHealthChanged(UOWHealthComponent* HealthComp, float OldValue, float NewValue,
+	AActor* Instigator)
 {
-	if (!TargetASC.IsValid()) return;
-	float MaxHealth = TargetASC->GetNumericAttribute(UOWAttributeSet_Base::GetMaxHealthAttribute());
-	OnHealthChanged(Data.OldValue, Data.NewValue, MaxHealth);
+	OnHealthChanged(OldValue, NewValue, HealthComp->GetMaxHealth());
 }
 
-void UOWUserWidget::UltChargeChangedCallback(const FOnAttributeChangeData& Data)
+void UOWUserWidget::HandleMaxHealthChanged(UOWHealthComponent* HealthComp, float OldValue, float NewValue,
+	AActor* Instigator)
 {
-	if (!TargetASC.IsValid()) return;
-	float MaxUlt = TargetASC->GetNumericAttribute(UOWAttributeSet_Base::GetMaxUltimateChargeAttribute());
-	OnUltChargeChanged(Data.OldValue, Data.NewValue, MaxUlt);
+	// 최대 체력이 변하면 비율 갱신을 위해 현재 체력을 다시 보냄
+	float CurrentHealth = HealthComp->GetHealth();
+	OnHealthChanged(CurrentHealth, CurrentHealth, NewValue);
 }
 
-void UOWUserWidget::AmmoChangedCallback(const FOnAttributeChangeData& Data)
+void UOWUserWidget::HandleAttributeChanged(FGameplayTag SlotTag, float OldValue, float NewValue, float MaxValue)
 {
-	if (!TargetASC.IsValid()) return;
-	float MaxAmmo = TargetASC->GetNumericAttribute(UOWAttributeSet_Weapon::GetMaxAmmoAttribute());
-	OnAmmoChanged(Data.OldValue, Data.NewValue, MaxAmmo);
+	OnUIAttributeChanged(SlotTag, OldValue, NewValue, MaxValue);
 }
 
-void UOWUserWidget::BarrierChangedCallback(const FOnAttributeChangeData& Data)
+void UOWUserWidget::HandleCooldownChanged(FGameplayTag SlotTag, float TimeRemaining, float TotalDuration)
 {
-	if (!TargetASC.IsValid()) return;
-	float MaxBarrier = TargetASC->GetNumericAttribute(UOWAttributeSet_Skill::GetMaxBarrierAttribute());
-	OnBarrierChanged(Data.OldValue, Data.NewValue, MaxBarrier);
-}
-
-void UOWUserWidget::OnCooldownTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
-{
-	if (!TargetASC.IsValid() || !RegisteredSkillTags.Contains(CallbackTag)) return;
-
-	int32 MaxStacks = RegisteredSkillTags[CallbackTag];
-	int32 AvailableStacks = FMath::Max(0, MaxStacks - NewCount);
-
-	float TimeRemaining = 0.0f;
-	float TotalDuration = 0.0f;
-
-	if (NewCount > 0)
-	{
-		FGameplayEffectQuery Query = FGameplayEffectQuery::MakeQuery_MatchAnyOwningTags(FGameplayTagContainer(CallbackTag));
-		TArray<float> Durations = TargetASC->GetActiveEffectsTimeRemaining(Query);
-		TArray<float> StartTimes = TargetASC->GetActiveEffectsDuration(Query);
-
-		if (Durations.Num() > 0 && StartTimes.Num() > 0)
-		{
-			TimeRemaining = Durations[0]; 
-			TotalDuration = StartTimes[0];
-		}
-	}
-
-	// 블루프린트로 "이 태그(SkillTag)의 상태가 이렇게 변했다!" 라고 쏴줌
-	OnSkillStateChanged(CallbackTag, AvailableStacks, MaxStacks, TimeRemaining, TotalDuration);
+	OnUICooldownUpdated(SlotTag, TimeRemaining, TotalDuration);
 }

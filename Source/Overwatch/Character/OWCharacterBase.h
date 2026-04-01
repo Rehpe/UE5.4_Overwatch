@@ -5,13 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
+#include "Interface/OWHealthInterface.h"
 #include "OWCharacterBase.generated.h"
 
 struct FGameplayTag;
 struct FInputActionValue;
 
 UCLASS()
-class OVERWATCH_API AOWCharacterBase : public ACharacter, public IAbilitySystemInterface
+class OVERWATCH_API AOWCharacterBase : public ACharacter, public IAbilitySystemInterface, public IOWHealthInterface
 {
 	GENERATED_BODY()
 
@@ -26,17 +27,25 @@ public:
 
 	void OnWeaponSet(class AOWWeapon* NewWeapon);
 	
+	// 캐릭터 + 위젯 숨김 처리
+	void OnHidden(bool bIsHidden);
+	// 위젯 숨김처리
+	void OnWidgetHidden(bool bIsHidden);
+	
 protected:
 	// -- Mesh --
 	UPROPERTY(ReplicatedUsing = OnRep_HeroData, BlueprintReadOnly, Category = "Data")
 	TObjectPtr<class UOWHeroData> HeroData;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	TObjectPtr<class UCameraComponent> FirstPersonCamera;	// 1인칭 카메라
+	TObjectPtr<class UCameraComponent> FirstPersonCamera;		// 1인칭 카메라
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	TObjectPtr<class USkeletalMeshComponent> FirstPersonMesh; //1인칭 메쉬
-	
+	TObjectPtr<class USkeletalMeshComponent> FirstPersonMesh;	//1인칭 메쉬
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<class UWidgetComponent> HealthBarWidgetComp;			// 머리 위 hp바
+
 	UFUNCTION()
 	void OnRep_HeroData();
 
@@ -54,6 +63,14 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attribute")
 	TObjectPtr<class UOWAttributeSet_Skill> AttributeSet_Skill;
+
+	// 체력 관련
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UOWHealthComponent> HealthComponent;
+
+	// 기타 Attribute 수치 관련
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UOWCombatComponent> CombatComponent;
 	
 	// 영웅별 AttributeSet 3종을 초기화
 	virtual void InitAttributes();
@@ -63,6 +80,7 @@ protected:
 
 	// Death 태그 변경 여부 감시 
 	virtual void OnDeathTagChanged(const FGameplayTag CallbackTag, int32 NewCount);
+
 
 public:
 	FORCEINLINE TObjectPtr<class USkeletalMeshComponent> GetFirstPersonMesh() const { return FirstPersonMesh; }
@@ -77,7 +95,9 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	float GetHealth() const;
-	
+
+	virtual class UOWHealthComponent* GetOWHealthComponent_Implementation() const { return HealthComponent;};
+
 protected:
 	// -- Input --
 	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
@@ -96,6 +116,7 @@ protected:
 	// -- GAS --
 	virtual void OnRep_PlayerState() override;
 	void InitAbilityActorInfo();
+	void InitWidget();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	TObjectPtr<class UOWAbilitySystemComponent> ASC;
@@ -104,8 +125,6 @@ protected:
 	// -- Movement --
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 
-public:	
-	//virtual void Tick(float DeltaTime) override;
-	//virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+protected:
+	void OnDeathStarted();
 };

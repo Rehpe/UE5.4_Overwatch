@@ -11,7 +11,7 @@ public class Overwatch : ModuleRules
 		PublicIncludePaths.AddRange(new string[] {"OverWatch"}); 
 		
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput",
-        "GameplayAbilities", "GameplayTags", "GameplayTasks", "Niagara" });
+        "GameplayAbilities", "GameplayTags", "GameplayTasks", "Niagara", "PhysicsCore" });
 		
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

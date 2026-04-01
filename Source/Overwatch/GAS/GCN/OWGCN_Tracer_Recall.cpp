@@ -25,6 +25,9 @@ bool AOWGCN_Tracer_Recall::OnActive_Implementation(AActor* MyTarget, const FGame
 	TargetCharacter = Cast<AOWCharacterBase>(MyTarget);
 	if (!TargetCharacter) return bResult;
 
+	// 1p, 3p 모두 위젯 숨김
+	TargetCharacter->OnWidgetHidden(true);
+	
 	bIsLocallyControlled = TargetCharacter->IsLocallyControlled();
 	ElapsedTime = 0.0f;
 	
@@ -68,7 +71,7 @@ bool AOWGCN_Tracer_Recall::OnActive_Implementation(AActor* MyTarget, const FGame
 	else
 	{
 		// 3p
-		TargetCharacter->SetActorHiddenInGame(true);	// 투명화처리
+		TargetCharacter->OnHidden(true);	// 투명화처리
 		if (RecallStartFX_3P)
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RecallStartFX_3P, TargetCharacter->GetActorTransform());
@@ -82,6 +85,9 @@ bool AOWGCN_Tracer_Recall::OnRemove_Implementation(AActor* MyTarget, const FGame
 {
 	if (TargetCharacter)
 	{
+		// 1p, 3p 모두 위젯 해제
+		TargetCharacter->OnWidgetHidden(false);
+		
 		if (bIsLocallyControlled)
 		{
 			// 1p
@@ -108,7 +114,7 @@ bool AOWGCN_Tracer_Recall::OnRemove_Implementation(AActor* MyTarget, const FGame
 		else
 		{
 			// 3p
-			TargetCharacter->SetActorHiddenInGame(false);
+			TargetCharacter->OnHidden(false); // 투명화 해제
 			if (RecallEndFX_3P)
 			{
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), RecallEndFX_3P, TargetCharacter->GetActorTransform());

@@ -9,11 +9,14 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "OWAnimInstance.h"
+#include "OWCombatComponent.h"
+#include "OWHealthComponent.h"
 #include "OWHeroData.h"
 #include "OWHeroVoiceData.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GAS/OWAbilitySet.h"
 #include "GAS/OWAbilitySystemComponent.h"
@@ -21,7 +24,9 @@
 #include "GAS/Tags/OWGameplayTags.h"
 #include "Input/OWEnhancedInputComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/OWPlayerController.h"
 #include "Weapon/OWWeapon.h"
+#include "Widget/OWUserWidget.h"
 
 
 AOWCharacterBase::AOWCharacterBase()
@@ -31,7 +36,7 @@ AOWCharacterBase::AOWCharacterBase()
 	AttributeSet_Base = nullptr;
 	AttributeSet_Weapon = nullptr;
 	AttributeSet_Skill = nullptr;
-
+	
 	// -- 1p Camera Setting --
 	FirstPersonCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	FirstPersonCamera->SetupAttachment(GetCapsuleComponent());
@@ -72,6 +77,21 @@ AOWCharacterBase::AOWCharacterBase()
 		BaseEyeHeight = 70.f;
 		CrouchedEyeHeight = 25.f;
 	}
+	
+	// -- hp bar --
+	HealthBarWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthBarWidgetComponent"));
+	
+	HealthBarWidgetComp->SetupAttachment(RootComponent); 
+	HealthBarWidgetComp->SetRelativeLocation(FVector(0.0f, 0.0f, 90.0f)); 
+	
+	HealthBarWidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
+	HealthBarWidgetComp->SetDrawSize(FVector2D(150.0f, 40.0f));
+	
+	HealthBarWidgetComp->bOwnerNoSee = true;
+
+	//  -- Component
+	HealthComponent = CreateDefaultSubobject<UOWHealthComponent>(TEXT("HealthComponent"));
+	CombatComponent = CreateDefaultSubobject<UOWCombatComponent>(TEXT("CombatComponent"));
 }
 
 // 데디서버환경에서는 서버에서만 호출됨
@@ -81,6 +101,7 @@ void AOWCharacterBase::PossessedBy(AController* NewController)
 
 	InitAbilityActorInfo();  // ASC 초기화
 	ApplyHeroData(); // 영웅 별 데이터 적용
+	InitWidget();	// Hud, Hp바 초기화
 	InitASCListeners();	// 태그 감시
 }
 
@@ -106,6 +127,7 @@ void AOWCharacterBase::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 	// 클라이언트에서 ASC 초기화
 	InitAbilityActorInfo();
+	InitWidget();
 	InitASCListeners();
 	
 	// BP에 미리 할당한 HeroData 갱신용
@@ -188,6 +210,15 @@ void AOWCharacterBase::ApplyHeroData()
 	if (LoadedAnim3P)
 	{
 		GetMesh()->SetAnimInstanceClass(LoadedAnim3P);
+	}
+
+	// HeroName
+	if(HealthBarWidgetComp)
+	{
+		if (UOWUserWidget* HealthWidget = Cast<UOWUserWidget>(HealthBarWidgetComp->GetUserWidgetObject()))
+		{
+			HealthWidget->InitHeroName(HeroData->HeroName); 
+		}
 	}
 
 	// SkillSet GAS
@@ -291,31 +322,31 @@ void AOWCharacterBase::OnDeathTagChanged(const FGameplayTag CallbackTag, int32 N
 	// 태그가 추가되었다면
 	if (NewCount > 0)
 	{
-		// 캡슐 콜리전 해제
-		if (UCapsuleComponent* Capsule = GetCapsuleComponent())
-		{
-			Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		}
+		OnDeathStarted();
+	}
+}
 
-		// 이동 및 관성 정지
-		if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+void AOWCharacterBase::OnHidden(bool bIsHidden)
+{
+	SetActorHiddenInGame(bIsHidden); // 본체 숨기기
+
+	// 본체에 붙은 하위 액터 숨기기
+	TArray<AActor*> AttachedActors;
+	GetAttachedActors(AttachedActors); 
+	for (AActor* AttachedActor : AttachedActors)
+	{
+		if (AttachedActor)
 		{
-			MoveComp->StopMovementImmediately();
-			MoveComp->DisableMovement();
-		}
-		
-		if (USkeletalMeshComponent* MyMesh = GetMesh())
-		{
-			// 콜리전 프로파일 변경
-			MyMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
-			MyMesh->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
-            
-			// 랙돌 활성화
-			MyMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			MyMesh->SetCollisionProfileName(FName("Ragdoll"));
-			MyMesh->SetSimulatePhysics(true);
+			AttachedActor->SetActorHiddenInGame(bIsHidden);
 		}
 	}
+	
+	HealthBarWidgetComp->SetVisibility(!bIsHidden); // hp바 숨기기
+}
+
+void AOWCharacterBase::OnWidgetHidden(bool bIsHidden)
+{
+	HealthBarWidgetComp->SetVisibility(!bIsHidden); // hp바 숨기기
 }
 
 USoundBase* AOWCharacterBase::GetVoice(FGameplayTag VoiceTag) const
@@ -411,6 +442,16 @@ void AOWCharacterBase::InitAbilityActorInfo()
 		if(ASC)
 		{
 			ASC->InitAbilityActorInfo(PS, this); // ASC 초기화
+
+			if (HealthComponent)
+			{
+				HealthComponent->InitializeWithAbilitySystem(ASC);
+			}
+			if (CombatComponent)
+			{
+				CombatComponent->InitializeWithAbilitySystem(ASC);
+			}
+			
 			if (GetMesh() && GetMesh()->GetAnimInstance())
 			{
 				// AnimInstance에 ASC 전달
@@ -431,13 +472,34 @@ void AOWCharacterBase::InitAbilityActorInfo()
 	}
 }
 
+void AOWCharacterBase::InitWidget()
+{
+	if (!HealthComponent) return;
+
+	if (HealthBarWidgetComp && HealthBarWidgetComp->GetUserWidgetObject())
+	{
+		if (UOWUserWidget* HealthWidget = Cast<UOWUserWidget>(HealthBarWidgetComp->GetUserWidgetObject()))
+		{
+			HealthWidget->InitWidgetWithHealthComp(HealthComponent);
+          
+			if (HeroData) HealthWidget->InitHeroName(HeroData->HeroName);
+		}
+	}
+	if (IsLocallyControlled())
+	{
+		if (AOWPlayerController* PC = Cast<AOWPlayerController>(GetController()))
+		{
+			PC->SetupHUD(HealthComponent, CombatComponent); 
+		}
+	}
+}
+
 void AOWCharacterBase::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode)
 {
 	Super::OnMovementModeChanged(PrevMovementMode, PreviousCustomMode);
 
 	if (!ASC) return;
-
-	// 1. 기존 이동 관련 태그 싹 지우기 (초기화)
+	
 	// (미리 정의해둔 State.Movement 부모 태그 하위의 모든 태그 제거)
 	FGameplayTag AirTag = FOWGameplayTags::Get().State_Movement_Air;
 
@@ -448,6 +510,41 @@ void AOWCharacterBase::OnMovementModeChanged(EMovementMode PrevMovementMode, uin
 	else
 	{
 		ASC->RemoveLooseGameplayTag(AirTag);
+	}
+}
+
+void AOWCharacterBase::OnDeathStarted()
+{
+	// 캡슐 콜리전 해제
+	if (UCapsuleComponent* Capsule = GetCapsuleComponent())
+	{
+		Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
+	// 이동 및 관성 정지
+	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+	{
+		MoveComp->StopMovementImmediately();
+		MoveComp->DisableMovement();
+	}
+		
+	if (USkeletalMeshComponent* MyMesh = GetMesh())
+	{
+		// 콜리전 프로파일 변경
+		MyMesh->SetCollisionResponseToChannel(ECC_Visibility, ECR_Ignore);
+		MyMesh->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+            
+		// 랙돌 활성화
+		MyMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		MyMesh->SetCollisionProfileName(FName("Ragdoll"));
+		MyMesh->SetSimulatePhysics(true);
+	}
+
+	// 무기 삭제
+	if (Weapon) 
+	{
+		Weapon->Destroy();
+		Weapon = nullptr;
 	}
 }
 

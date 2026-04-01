@@ -159,12 +159,12 @@ void UOWGA_MeleeAttack::OnMeleeHitEvent(FGameplayEventData Payload)
 					{
 						FGameplayTag DamageTag = FOWGameplayTags::Get().Data_Damage; 
 						FGameplayTag IdentityTag = FOWGameplayTags::Get().Data_Damage_Melee;
-						float FinalDamage = -HeroData->BaseMeleeAttackDamage;
+						float FinalDamage = HeroData->BaseMeleeAttackDamage;
 						SpecHandle.Data.Get()->SetSetByCallerMagnitude(DamageTag, FinalDamage);
 						SpecHandle.Data.Get()->AddDynamicAssetTag(IdentityTag);
 						SourceASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), TargetASC);
 					
-						OWLOG_SCREEN(TEXT("Applied %f Weapon Damage to %s"), FinalDamage, *TargetActor->GetName());
+						//OWLOG_SCREEN(TEXT("Applied %f Weapon Damage to %s"), FinalDamage, *TargetActor->GetName());
 					}
 				}
 			}
@@ -227,11 +227,11 @@ bool UOWGA_MeleeAttack::CheckMeleeHitTrace(FHitResult& OutHitResult)
 		QueryParams
 	);
 
-#if ENABLE_DRAW_DEBUG
-	// 디버그 드로잉: 맞았으면 녹색, 빗나갔으면 빨간색
-	FColor DrawColor = bHit ? FColor::Green : FColor::Red;
-	DrawDebugCapsule(World, TraceStart + (TraceEnd - TraceStart) * 0.5f, MeleeRange * 0.5f, SphereRadius, TraceRot.Quaternion(), DrawColor, false, 2.0f);
-#endif
+//#if ENABLE_DRAW_DEBUG
+//	// 디버그 드로잉: 맞았으면 녹색, 빗나갔으면 빨간색
+//	FColor DrawColor = bHit ? FColor::Green : FColor::Red;
+//	DrawDebugCapsule(World, TraceStart + (TraceEnd - TraceStart) * 0.5f, MeleeRange * 0.5f, SphereRadius, TraceRot.Quaternion(), DrawColor, false, 2.0f);
+//#endif
 
 	return bHit;
 }

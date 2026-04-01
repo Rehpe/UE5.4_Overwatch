@@ -23,7 +23,4 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UGameplayEffect> DeathEffectClass;
-	
-protected:
-	void StartRagdoll(const FGameplayEventData* TriggerEventData);
 };

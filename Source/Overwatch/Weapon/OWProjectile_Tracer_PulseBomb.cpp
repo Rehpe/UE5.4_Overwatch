@@ -79,6 +79,18 @@ void AOWProjectile_Tracer_PulseBomb::OnProjectileHit(UPrimitiveComponent* HitCom
 		AttachToComponent(OtherComp, FAttachmentTransformRules::KeepWorldTransform, Hit.BoneName);
 	}
 
+	FVector ExplodeLocation = GetActorLocation();
+	AActor* InstigatorActor = GetInstigator(); 
+	UAbilitySystemComponent* InstigatorASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(InstigatorActor);
+
+	// PlayEffect
+	if (InstigatorASC)
+	{
+		FGameplayCueParameters CueParams;
+		CueParams.Location = ExplodeLocation;
+		InstigatorASC->ExecuteGameplayCue(FOWGameplayTags::Get().GameplayCue_Tracer_Ult_OnAttached, CueParams);
+	}
+	
 	// 폭발 타이머 시작
 	GetWorld()->GetTimerManager().SetTimer(ExplosionTimerHandle, this, &AOWProjectile_Tracer_PulseBomb::Explode, ExplosionDelay, false);
 
@@ -151,7 +163,7 @@ void AOWProjectile_Tracer_PulseBomb::Explode()
 					FVector KnockbackDir = (TargetCharacter->GetActorLocation() - ExplodeLocation).GetSafeNormal();
 					KnockbackDir.Z = FMath::Max(KnockbackDir.Z, 0.5f); // 위로 살짝 띄우기
              
-					// bVelocityChange = true 로 주어 질량 무시하고 강제 넉백
+					// bVelocityChange = true 로 질량 무시하고 강제 넉백
 					TargetCMC->AddImpulse(KnockbackDir * 2000.0f, true); 
 				}
 			}

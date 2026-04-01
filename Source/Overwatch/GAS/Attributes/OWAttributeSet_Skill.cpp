@@ -4,6 +4,7 @@
 #include "GAS/Attributes/OWAttributeSet_Skill.h"
 
 #include "GameplayEffectExtension.h"
+#include "GAS/Tags/OWGameplayTags.h"
 #include "Net/UnrealNetwork.h"
 
 UOWAttributeSet_Skill::UOWAttributeSet_Skill()
@@ -14,10 +15,10 @@ void UOWAttributeSet_Skill::PreAttributeChange(const FGameplayAttribute& Attribu
 {
 	Super::PreAttributeChange(Attribute, NewValue);
 
-	//if (Attribute == GetStaminaAttribute())
-	//{
-	//	NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxStamina());
-	//}
+	if (Attribute == GetStaminaAttribute())
+	{
+		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxStamina());
+	}
 	if (Attribute == GetBarrierAttribute())
 	{
 		NewValue = FMath::Clamp(NewValue, 0.0f, GetMaxBarrier());
@@ -27,6 +28,12 @@ void UOWAttributeSet_Skill::PreAttributeChange(const FGameplayAttribute& Attribu
 void UOWAttributeSet_Skill::PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
+
+	// Stamina
+	if (Data.EvaluatedData.Attribute == GetStaminaAttribute())
+	{
+		SetStamina(FMath::Clamp(GetStamina(), 0.0f, GetMaxStamina()));
+	}
 }
 
 void UOWAttributeSet_Skill::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -35,15 +42,49 @@ void UOWAttributeSet_Skill::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 
 	//COND_NONE : 적군 아군 상관 없이 모두에게 보냄
 	//REPNOTIFY_Always : GAS의 Client Prediction을 위해, 언제나 OnRep 실행
-	//DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet_Skill, Stamina, COND_None, REPNOTIFY_Always);
-	//DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet_Skill, MaxStamina, COND_None, REPNOTIFY_Always);
-	//DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet_Skill, StaminaRegenPeriod, COND_None, REPNOTIFY_Always);
-	//DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet_Skill, StaminaRegenAmount, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet_Skill, Stamina, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet_Skill, MaxStamina, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet_Skill, StaminaRegenPeriod, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet_Skill, StaminaRegenAmount, COND_None, REPNOTIFY_Always);
 
 	DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet_Skill, Barrier, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet_Skill, MaxBarrier, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet_Skill, BarrierRegenRate, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UOWAttributeSet_Skill, BarrierRegenDelay, COND_None, REPNOTIFY_Always);
+}
+
+bool UOWAttributeSet_Skill::GetStaminaData(const FGameplayAttribute& InStamina, FGameplayAttribute& OutMax,
+	FGameplayAttribute& OutPeriod, FGameplayTag& OutRegenTag)
+{
+	// 입력받은 스태미너의 짝꿍 반환
+	if (InStamina == GetStaminaAttribute())
+	{
+		OutMax = GetMaxStaminaAttribute();
+		OutPeriod = GetStaminaRegenPeriodAttribute();
+		OutRegenTag = FOWGameplayTags::Get().State_Regen_Stamina;
+		return true;
+	}
+	return false;
+}
+
+void UOWAttributeSet_Skill::OnRep_Stamina(const FGameplayAttributeData& OldStamina)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UOWAttributeSet_Skill, Stamina, OldStamina);
+}
+
+void UOWAttributeSet_Skill::OnRep_MaxStamina(const FGameplayAttributeData& OldMaxStamina)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UOWAttributeSet_Skill, MaxStamina, OldMaxStamina);
+}
+
+void UOWAttributeSet_Skill::OnRep_StaminaRegenPeriod(const FGameplayAttributeData& OldStaminaRegenPeriod)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UOWAttributeSet_Skill, StaminaRegenPeriod, OldStaminaRegenPeriod);
+}
+
+void UOWAttributeSet_Skill::OnRep_StaminaRegenAmount(const FGameplayAttributeData& OldStaminaRegenAmount)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UOWAttributeSet_Skill, StaminaRegenAmount, OldStaminaRegenAmount);
 }
 
 void UOWAttributeSet_Skill::OnRep_Barrier(const FGameplayAttributeData& OldBarrier)
@@ -66,26 +107,3 @@ void UOWAttributeSet_Skill::OnRep_BarrierRegenDelay(const FGameplayAttributeData
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UOWAttributeSet_Skill, BarrierRegenDelay, OldBarrierRegenDelay);
 }
 
-/*
-
-void UOWAttributeSet_Skill::OnRep_Stamina(const FGameplayAttributeData& OldStamina)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UOWAttributeSet_Skill, Stamina, OldStamina);
-}
-
-void UOWAttributeSet_Skill::OnRep_MaxStamina(const FGameplayAttributeData& OldMaxStamina)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UOWAttributeSet_Skill, MaxStamina, OldMaxStamina);
-}
-
-void UOWAttributeSet_Skill::OnRep_StaminaRegenPeriod(const FGameplayAttributeData& OldStaminaRegenPeriod)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UOWAttributeSet_Skill, StaminaRegenPeriod, OldStaminaRegenPeriod);
-}
-
-void UOWAttributeSet_Skill::OnRep_StaminaRegenAmount(const FGameplayAttributeData& OldStaminaRegenAmount)
-{
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UOWAttributeSet_Skill, StaminaRegenAmount, OldStaminaRegenAmount);
-}
-
-*/

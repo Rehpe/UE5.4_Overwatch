@@ -23,6 +23,10 @@ public:
 	}
 	
 public:
+	// 영웅 이름
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HeroName")
+	FText HeroName;
+	
 	// 1p
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visuals|1P")
 	TSoftObjectPtr<USkeletalMesh> Mesh1P;
@@ -56,7 +60,7 @@ public:
 	
 	// Weapon
 	UPROPERTY(EditDefaultsOnly,  BlueprintReadOnly, Category = "Equipment")
-	TSubclassOf<AOWWeapon> WeaponClass;
+	TSubclassOf<class AOWWeapon> WeaponClass;
 
 	// Voice
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Voice")

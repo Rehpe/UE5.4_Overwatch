@@ -21,7 +21,7 @@ public:
 	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
-	/*// -- Stamina (리젠되는 자원) --
+	// -- Stamina (리젠되는 자원) --
 	UPROPERTY(BlueprintReadOnly, Category = "Skill", ReplicatedUsing = OnRep_Stamina)
 	FGameplayAttributeData Stamina;
 	ATTRIBUTE_ACCESSORS(UOWAttributeSet_Skill, Stamina);
@@ -36,7 +36,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Skill", ReplicatedUsing = OnRep_StaminaRegenAmount)
 	FGameplayAttributeData StaminaRegenAmount;	// 스태미너 회복량(count)
-	ATTRIBUTE_ACCESSORS(UOWAttributeSet_Skill, StaminaRegenAmount);*/
+	ATTRIBUTE_ACCESSORS(UOWAttributeSet_Skill, StaminaRegenAmount);
 
 	// -- Barrier (깨지는 자원) --
 	UPROPERTY(BlueprintReadOnly, Category = "Skill", ReplicatedUsing = OnRep_Barrier)
@@ -54,12 +54,16 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Skill", ReplicatedUsing = OnRep_BarrierRegenDelay)
 	FGameplayAttributeData BarrierRegenDelay;	// 배리어 회복하기까지 딜레이
 	ATTRIBUTE_ACCESSORS(UOWAttributeSet_Skill, BarrierRegenDelay);
+	
+public:
+	// Stamina 넣으면 MaxStamina/Period/RegenTag 반환
+	static bool GetStaminaData(const FGameplayAttribute& InStamina, FGameplayAttribute& OutMax, FGameplayAttribute& OutPeriod, FGameplayTag& OutRegenTag);
 
 protected:
-	//UFUNCTION() virtual void OnRep_Stamina(const FGameplayAttributeData& OldStamina);
-	//UFUNCTION() virtual void OnRep_MaxStamina(const FGameplayAttributeData& OldMaxStamina);
-	//UFUNCTION() virtual void OnRep_StaminaRegenPeriod(const FGameplayAttributeData& OldStaminaRegenPeriod);
-	//UFUNCTION() virtual void OnRep_StaminaRegenAmount(const FGameplayAttributeData& OldStaminaRegenAmount);
+	UFUNCTION() virtual void OnRep_Stamina(const FGameplayAttributeData& OldStamina);
+	UFUNCTION() virtual void OnRep_MaxStamina(const FGameplayAttributeData& OldMaxStamina);
+	UFUNCTION() virtual void OnRep_StaminaRegenPeriod(const FGameplayAttributeData& OldStaminaRegenPeriod);
+	UFUNCTION() virtual void OnRep_StaminaRegenAmount(const FGameplayAttributeData& OldStaminaRegenAmount);
 
 	UFUNCTION() virtual void OnRep_Barrier(const FGameplayAttributeData& OldBarrier);
 	UFUNCTION() virtual void OnRep_MaxBarrier(const FGameplayAttributeData& OldMaxBarrier);

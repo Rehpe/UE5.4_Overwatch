@@ -24,8 +24,7 @@ void UOWGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
-	//Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-	
+
 	// GE_Death 적용
 	if (DeathEffectClass)
 	{
@@ -35,10 +34,8 @@ void UOWGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const
 			ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, DeathSpec);
 		}
 	}
-
-	// Ragdoll 처리는 GCN에서 담당
 	
-	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
 void UOWGA_Death::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

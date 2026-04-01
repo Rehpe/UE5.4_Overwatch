@@ -9,6 +9,12 @@
 /**
  * 
  */
+DECLARE_MULTICAST_DELEGATE_FourParams(FOWOutOfHealthEvent,
+	AActor* /*Instigator 가해자(Controller/Pawn)*/,
+	AActor* /*Causer 타격 도구(탄환, 스킬액터 등)*/,
+	const FGameplayEffectSpec* /*EffectSpec* 사망에 기여한 마지막 GE 정보 (데미지 타입, 태그 등)*/,
+	float /*Magnitude 마지막 타격의 실제 데미지 수치*/);
+
 UCLASS()
 class OVERWATCH_API UOWAttributeSet_Base : public UOWAttributeSet
 {
@@ -22,11 +28,11 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	// -- Health -- 
-	UPROPERTY(BlueprintReadOnly, Category = "Attributes", ReplicatedUsing = OnRep_Health)
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Health)
 	FGameplayAttributeData Health;
 	ATTRIBUTE_ACCESSORS(UOWAttributeSet_Base, Health);
 
-	UPROPERTY(BlueprintReadOnly, Category = "Attributes", ReplicatedUsing = OnRep_MaxHealth)
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxHealth)
 	FGameplayAttributeData MaxHealth;
 	ATTRIBUTE_ACCESSORS(UOWAttributeSet_Base, MaxHealth);
 	
@@ -36,8 +42,16 @@ public:
 	UFUNCTION()
 	virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth);
 
+	// 체력이 0이 되었을 때 쏘는 사망 전용 델리게이트
+	mutable FOWOutOfHealthEvent OnOutOfHealth;
+	
+	// Damage -> Replicate 불필요
+	UPROPERTY(BlueprintReadOnly)
+	FGameplayAttributeData Damage;
+	ATTRIBUTE_ACCESSORS(UOWAttributeSet_Base, Damage)
+	
 	// -- MoveSpeed --
-	UPROPERTY(BlueprintReadOnly, Category = "Attributes", ReplicatedUsing = OnRep_MoveSpeed)
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MoveSpeed)
 	FGameplayAttributeData MoveSpeed;
 	ATTRIBUTE_ACCESSORS(UOWAttributeSet_Base, MoveSpeed);
 
@@ -45,11 +59,11 @@ public:
 	virtual void OnRep_MoveSpeed(const FGameplayAttributeData& OldMoveSpeed);
 
 	// -- Ult Charge --
-	UPROPERTY(BlueprintReadOnly, Category = "Attributes", ReplicatedUsing = OnRep_UltimateCharge)
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_UltimateCharge)
 	FGameplayAttributeData UltimateCharge;
 	ATTRIBUTE_ACCESSORS(UOWAttributeSet_Base, UltimateCharge);
 
-	UPROPERTY(BlueprintReadOnly, Category = "Attributes", ReplicatedUsing = OnRep_MaxUltimateCharge)
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_MaxUltimateCharge)
 	FGameplayAttributeData MaxUltimateCharge;
 	ATTRIBUTE_ACCESSORS(UOWAttributeSet_Base, MaxUltimateCharge);
 

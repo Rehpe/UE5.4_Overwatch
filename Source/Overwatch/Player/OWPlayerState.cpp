@@ -16,6 +16,9 @@ AOWPlayerState::AOWPlayerState()
 	AttributeSet_Base = CreateDefaultSubobject<UOWAttributeSet_Base>(TEXT("AttributeSet_Base"));
 	AttributeSet_Weapon = CreateDefaultSubobject<UOWAttributeSet_Weapon>(TEXT("AttributeSet_Weapon"));
 	AttributeSet_Skill = CreateDefaultSubobject<UOWAttributeSet_Skill>(TEXT("AttributeSet_Skill"));
+
+	NetUpdateFrequency = 100.0f;
+	MinNetUpdateFrequency = 33.0f;
 }
 
 class UAbilitySystemComponent* AOWPlayerState::GetAbilitySystemComponent() const

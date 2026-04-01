@@ -5,6 +5,7 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GameplayEffectExtension.h"
+#include "GAS/Tags/OWGameplayTags.h"
 #include "Net/UnrealNetwork.h"
 
 UOWAttributeSet_Weapon::UOWAttributeSet_Weapon()
@@ -30,20 +31,6 @@ void UOWAttributeSet_Weapon::PostGameplayEffectExecute(const FGameplayEffectModC
 		// 클램핑
 		float CurrentAmmo = GetAmmo();
 		SetAmmo(FMath::Clamp(CurrentAmmo, 0.0f, GetMaxAmmo()));
-
-		// 탄약 0이면 자동으로 재장전
-		if (CurrentAmmo <= 0.0f)
-		{
-			AActor* TargetActor = GetOwningActor();
-			FGameplayTag OutofAmmoEventTag = FGameplayTag::RequestGameplayTag(FName("GameplayEvent.Weapon.OutOfAmmo"));
-
-			FGameplayEventData Payload;
-			Payload.EventTag = OutofAmmoEventTag;
-			Payload.Instigator = Data.EffectSpec.GetEffectContext().GetInstigator();
-			Payload.Target = TargetActor;
-			
-			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(TargetActor, OutofAmmoEventTag, Payload);
-		}
 	}
 }
 

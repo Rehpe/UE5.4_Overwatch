@@ -38,11 +38,11 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "OW|Components")
 	TObjectPtr<class UNiagaraComponent> NiagaraComp;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "OW|Components")
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<class UNiagaraSystem> NS_Trail;	// 투척 시 이펙트
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "OW|Components")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<class UNiagaraSystem> NS_Pulse;	// 부착 시 이펙트
 
 	// 폭발 지연 시간 

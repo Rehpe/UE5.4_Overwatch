@@ -5,10 +5,12 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
-#include "Overwatch.h"
 #include "Character/OWCharacterBase.h"
 #include "Weapon/OWWeapon.h"
 #include "GAS/Tags/OWGameplayTags.h"
+#include "Chaos/ChaosEngineInterface.h" // UEPhysicalSurface용
+
+#define SURFACE_HEAD SurfaceType1
 
 UOWGA_Weapon_Ranged_Fire::UOWGA_Weapon_Ranged_Fire()
 {
@@ -150,14 +152,24 @@ void UOWGA_Weapon_Ranged_Fire::ApplyDamage(const FHitResult& HitResult)
 				FGameplayTag DamageTag = FOWGameplayTags::Get().Data_Damage; 
 				FGameplayTag IdentityTag = FOWGameplayTags::Get().Data_Damage_WeaponFire; 
 					
-				float FinalDamage = -Weapon->GetBaseWeaponFireDamage(); 
+				float FinalDamage = Weapon->GetBaseWeaponFireDamage(); 
 
 				SpecHandle.Data.Get()->SetSetByCallerMagnitude(DamageTag, FinalDamage);
 				SpecHandle.Data.Get()->AddDynamicAssetTag(IdentityTag);
 
-				SourceASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), TargetASC);
+				if (HitResult.PhysMaterial.IsValid())
+				{
+					EPhysicalSurface SurfaceType = UPhysicalMaterial::DetermineSurfaceType(HitResult.PhysMaterial.Get());
+					// 물리 재질이 머리라면
+					if (SurfaceType == SURFACE_HEAD)
+					{
+						// 헤드샷 태그 추가
+						SpecHandle.Data.Get()->AddDynamicAssetTag(FOWGameplayTags::Get().Damage_Modifier_Headshot);
+					}
+				}
 				
-				OWLOG_SCREEN(TEXT("Applied %f Weapon Damage to %s"), FinalDamage, *HitActor->GetName());
+				SourceASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), TargetASC);
+				//OWLOG_SCREEN(TEXT("Applied %f Weapon Damage to %s"), FinalDamage, *HitActor->GetName());
 			}
 		}
 	}

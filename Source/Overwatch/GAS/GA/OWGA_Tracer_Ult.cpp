@@ -20,13 +20,6 @@ void UOWGA_Tracer_Ult::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
-	// 1. 누가 실행했는지 판별 (Server or Client)
-	FString NetRole = HasAuthority(&ActivationInfo) ? TEXT("Server") : TEXT("Client");
-    
-	// 2. 화면과 출력 로그(Output Log)에 모두 띄우기 (눈에 확 띄게 노란색 경고로 출력)
-	UE_LOG(LogTemp, Warning, TEXT("[%s] Ult ActivateAbility Called!"), *NetRole);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("[%s] Ult ActivateAbility Called!"), *NetRole));
-	
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
@@ -134,7 +127,7 @@ void UOWGA_Tracer_Ult::OnThrowBombEvent(FGameplayEventData Payload)
 		FGameplayTag DamageTag = FOWGameplayTags::Get().Data_Damage; 
 		FGameplayTag IdentityTag = FOWGameplayTags::Get().Data_Damage_Tracer_Ult;
 
-		float FinalDamage = -BaseDamage;
+		float FinalDamage = BaseDamage;
 		
 		DamageSpecHandle.Data.Get()->SetSetByCallerMagnitude(DamageTag, FinalDamage);
 		DamageSpecHandle.Data.Get()->AddDynamicAssetTag(IdentityTag);

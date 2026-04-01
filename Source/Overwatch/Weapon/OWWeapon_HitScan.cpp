@@ -25,10 +25,15 @@ bool AOWWeapon_HitScan::Fire(const FVector& StartLocation, const FVector& ViewDi
 		QueryParams
 	);
 
-	// 디버그 라인
-	FVector BeamEnd = bHit ? OutHitResult.ImpactPoint : EndLocation;
-	DrawDebugLine(GetWorld(), StartLocation, BeamEnd, FColor::Red, false, 0.5f, 0, 1.0f);
-	DrawDebugPoint(GetWorld(), OutHitResult.ImpactPoint, 3.0f, FColor::Red, false, 2.0f);
-
+	if (APawn* OwnerPawn = Cast<APawn>(GetOwner()))
+	{
+		if (OwnerPawn->IsLocallyControlled())
+		{
+			// 디버그 라인
+			FVector BeamEnd = bHit ? OutHitResult.ImpactPoint : EndLocation;
+			DrawDebugLine(GetWorld(), StartLocation, BeamEnd, FColor::Red, false, 0.5f, 0, 1.0f);
+			DrawDebugPoint(GetWorld(), OutHitResult.ImpactPoint, 3.0f, FColor::Red, false, 2.0f);
+		}
+	}
 	return bHit;
 }

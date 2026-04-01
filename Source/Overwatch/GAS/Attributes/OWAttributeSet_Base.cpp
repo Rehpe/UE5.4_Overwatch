@@ -41,7 +41,6 @@ void UOWAttributeSet_Base::PostGameplayEffectExecute(const FGameplayEffectModCal
 	{
 		// 들어온 데미지를 로컬 변수에 기록 후 0으로 초기화
 		float LocalDamage = GetDamage();
-		OWLOG_SCREEN(TEXT("LocalDamage : %f"), LocalDamage);
 		SetDamage(0.0f);
 		
 		if (LocalDamage > 0.0f)

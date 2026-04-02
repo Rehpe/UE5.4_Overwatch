@@ -28,18 +28,6 @@ void UOWUserWidget::InitWidgetWithCombatComp_Implementation(class UOWCombatCompo
 	
 	InCombatComp->OnAttributeChanged.AddDynamic(this, &ThisClass::HandleAttributeChanged);
 	InCombatComp->OnCooldownChanged.AddDynamic(this, &ThisClass::HandleCooldownChanged);
-
-	/*// 탄약 초기화
-	float CurrentAmmo = InCombatComp->GetAmmo();
-	float MaxAmmo = InCombatComp->GetMaxAmmo();
-	FGameplayTag AmmoTag = FOWGameplayTags::Get().UI_Ammo;
-	OnUIAttributeChanged(AmmoTag, CurrentAmmo, CurrentAmmo, MaxAmmo);
-
-	// 궁극기 충전 초기화
-	float CurrentUltCharge = InCombatComp->GetUltCharge();
-	float MaxUltCharge = InCombatComp->GetMaxUltCharge();
-	FGameplayTag UltChargeTag = FOWGameplayTags::Get().UI_Ult;
-	OnUIAttributeChanged(CurrentHealth, CurrentHealth, MaxHealth);*/
 }
 
 void UOWUserWidget::HandleHealthChanged(UOWHealthComponent* HealthComp, float OldValue, float NewValue,

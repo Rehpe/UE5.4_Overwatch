@@ -43,7 +43,7 @@ public:
 
 	// SkillSet
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
-	TObjectPtr<class UOWAbilitySet> AbilitySet;
+	TSoftObjectPtr<class UOWAbilitySet> AbilitySet;
 
 	// GAS AttributeSet Init
 	// 공통
@@ -60,15 +60,15 @@ public:
 	
 	// Weapon
 	UPROPERTY(EditDefaultsOnly,  BlueprintReadOnly, Category = "Equipment")
-	TSubclassOf<class AOWWeapon> WeaponClass;
+	TSoftClassPtr<class AOWWeapon> WeaponClass;
 
 	// Voice
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Voice")
-	TObjectPtr<class UOWHeroVoiceData> VoiceData;
+	TSoftObjectPtr<class UOWHeroVoiceData> VoiceData;
 
 	// SFX
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Voice")
-	TObjectPtr<class UOWHeroSFXData> SFXData;
+	TSoftObjectPtr<class UOWHeroSFXData> SFXData;
 	
 	// Combat
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat")

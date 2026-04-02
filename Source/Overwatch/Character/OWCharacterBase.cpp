@@ -23,6 +23,7 @@
 #include "GAS/Attributes/OWAttributeSet_Base.h"
 #include "GAS/Tags/OWGameplayTags.h"
 #include "Input/OWEnhancedInputComponent.h"
+#include "Manager/OWAssetManager.h"
 #include "Net/UnrealNetwork.h"
 #include "Player/OWPlayerController.h"
 #include "Weapon/OWWeapon.h"
@@ -179,39 +180,32 @@ void AOWCharacterBase::OnWeaponSet(AOWWeapon* NewWeapon)
 
 void AOWCharacterBase::ApplyHeroData()
 {
-	if (!HeroData) return;
-
-	// 원래는 AsyncLoad(비동기)가 정석이지만, 
-	// 지금은 구현 복잡도를 낮추기 위해 LoadSynchronous(동기)로 "Soft Ptr 사용"만 구현합니다.
-	// 나중에 이 함수 내부만 StreamableManager 코드로 바꾸면 최적화 끝입니다.
-
 	// 1p Mesh
-	USkeletalMesh* LoadedMesh1P = HeroData->Mesh1P.LoadSynchronous();
+	USkeletalMesh* LoadedMesh1P = HeroData->Mesh1P.Get();
 	if (LoadedMesh1P)
 	{
 		FirstPersonMesh->SetSkeletalMesh(LoadedMesh1P);
 	}
 	// 1p Anim
-	UClass* LoadedAnim1P = HeroData->AnimClass1P.LoadSynchronous();
+	UClass* LoadedAnim1P = HeroData->AnimClass1P.Get();
 	if (LoadedAnim1P)
 	{
 		FirstPersonMesh->SetAnimInstanceClass(LoadedAnim1P);
 	}
 
 	// 3p Mesh
-	USkeletalMesh* LoadedMesh3P = HeroData->Mesh3P.LoadSynchronous();
+	USkeletalMesh* LoadedMesh3P = HeroData->Mesh3P.Get();
 	if (LoadedMesh3P)
 	{
 		GetMesh()->SetSkeletalMesh(LoadedMesh3P);
 	}
-
 	// 3p Anim
-	UClass* LoadedAnim3P = HeroData->AnimClass3P.LoadSynchronous();
+	UClass* LoadedAnim3P = HeroData->AnimClass3P.Get();
 	if (LoadedAnim3P)
 	{
 		GetMesh()->SetAnimInstanceClass(LoadedAnim3P);
 	}
-
+	
 	// HeroName
 	if(HealthBarWidgetComp)
 	{
@@ -224,12 +218,15 @@ void AOWCharacterBase::ApplyHeroData()
 	// SkillSet GAS
 	if (HasAuthority()) // Late Join 대비 Authority 검사
 	{
-		if (ASC && HeroData->AbilitySet)
+		if (ASC)
 		{
-			HeroData->AbilitySet->GiveToAbilitySystem(ASC, this);
+			if (UOWAbilitySet* LoadedAbilitySet = HeroData->AbilitySet.Get())
+			{
+				LoadedAbilitySet->GiveToAbilitySystem(ASC, this);
+			}
 		}
 		
-		if (HeroData->WeaponClass)
+		if (UClass* LoadedWeaponClass = HeroData->WeaponClass.Get())
 		{
 			if(Weapon)
 			{
@@ -242,7 +239,7 @@ void AOWCharacterBase::ApplyHeroData()
 			SpawnParams.Instigator = this; // 가해자 
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn; // 무조건 소환
 
-			AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(HeroData->WeaponClass, GetTransform(), SpawnParams);
+			AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(LoadedWeaponClass, GetTransform(), SpawnParams);
 			Weapon = Cast<AOWWeapon>(SpawnedActor);
 			if (Weapon)
 			{
@@ -261,6 +258,48 @@ void AOWCharacterBase::OnRep_HeroData()
 	{
 		Weapon->Equip(FirstPersonMesh, GetMesh());
 	}
+}
+
+void AOWCharacterBase::LoadHeroData()
+{
+	if (!HeroData) return;
+	
+	FStreamableManager& Streamable = UOWAssetManager::Get().GetStreamableManager();
+
+	// 만약 이전 영웅 로딩이 아직 안 끝났는데 또 호출되었다면 취소
+	if (HeroDataLoadHandle.IsValid() && HeroDataLoadHandle->IsActive())
+	{
+		HeroDataLoadHandle->CancelHandle();
+	}
+
+	// 비동기 로딩할 에셋 주소를 담는다
+	TArray<FSoftObjectPath> AssetsToLoad;
+	AssetsToLoad.AddUnique(HeroData->Mesh1P.ToSoftObjectPath());
+	AssetsToLoad.AddUnique(HeroData->AnimClass1P.ToSoftObjectPath());
+	AssetsToLoad.AddUnique(HeroData->Mesh3P.ToSoftObjectPath());
+	AssetsToLoad.AddUnique(HeroData->AnimClass3P.ToSoftObjectPath());
+	AssetsToLoad.AddUnique(HeroData->VoiceData.ToSoftObjectPath());
+	AssetsToLoad.AddUnique(HeroData->SFXData.ToSoftObjectPath());
+	AssetsToLoad.AddUnique(HeroData->AbilitySet.ToSoftObjectPath());
+	AssetsToLoad.AddUnique(HeroData->WeaponClass.ToSoftObjectPath());
+
+	// 로딩 요청
+	HeroDataLoadHandle = Streamable.RequestAsyncLoad(
+		AssetsToLoad, 
+		FStreamableDelegate::CreateUObject(this, &ThisClass::OnHeroDataLoaded)
+	);
+}
+
+
+void AOWCharacterBase::OnHeroDataLoaded()
+{
+	// 핸들 해제
+	if (HeroDataLoadHandle.IsValid())
+	{
+		HeroDataLoadHandle->ReleaseHandle();
+	}
+	
+	ApplyHeroData(); // 실제 적용
 }
 
 void AOWCharacterBase::InitAttributes()

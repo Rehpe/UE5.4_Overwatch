@@ -49,8 +49,17 @@ protected:
 	UFUNCTION()
 	void OnRep_HeroData();
 
-	// HeroData의 데이터 에셋을 읽어 적용
+	// HeroData의 데이터 에셋을 비동기 로딩
+	void LoadHeroData();
+	
+	// 로딩 완료 시 호출될 함수
+	void OnHeroDataLoaded();
+
+	// 로딩된 HeroData 적용
 	void ApplyHeroData();
+	
+	// AsyncLoading을 추적할 핸들
+	TSharedPtr<struct FStreamableHandle> HeroDataLoadHandle;
 	
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TObjectPtr<class AOWWeapon> Weapon;
@@ -125,6 +134,6 @@ protected:
 	// -- Movement --
 	virtual void OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 PreviousCustomMode) override;
 
-protected:
 	void OnDeathStarted();
+	
 };

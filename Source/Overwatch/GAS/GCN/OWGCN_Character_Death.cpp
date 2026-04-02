@@ -24,7 +24,7 @@ bool UOWGCN_Character_Death::OnExecute_Implementation(AActor* MyTarget, const FG
     // DeathVoice 실행
    if (UOWHeroData* HeroData = OWCharacter->GetHeroData())
    {
-       if (UOWHeroVoiceData* HVC = HeroData->VoiceData)
+       if (UOWHeroVoiceData* HVC = HeroData->VoiceData.Get())
        {
            FGameplayTag DeathVoiceTag = FOWGameplayTags::Get().Sound_Voice_Death;
            const TObjectPtr<USoundBase>* HeroDeathVoicePtr = HVC->VoiceMap.Find(DeathVoiceTag);
